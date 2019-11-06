@@ -46,7 +46,6 @@ $(function() {
         let xScale = d3.scaleLinear()
             .domain([0, data.length])
             .range([20, 480])
-            //.tickFormat((d,i) => streets[i])
 
         // Notice that the yScale is not inverted on the yScale
         let yScale = d3.scaleLinear()
@@ -58,14 +57,15 @@ $(function() {
             .domain([0, 100])
             .range([0, 460]);
 
-        let colorScale = ["#fcd88a", "#cf7c1c", "#93c464", "#75734F", "#5eafc6", "#41a368", "#41a368", "#41a368"];
+        let colorScale = ["#fcd88a", "#cf7c1c", "#93c464", "#75734F", "#5eafc6", "#41a368", "#41a000", "#41eae4"];
 
         let yAxis = d3.axisLeft()
             .scale(yScale)
             .tickSize(-500);
 
         let xAxis = d3.axisBottom()
-            .scale(xScale);
+            .scale(xScale)
+            .tickFormat((d) => console.log(data[d]));
 
         svg.append("g")
             .attr("class", "yAxis")
