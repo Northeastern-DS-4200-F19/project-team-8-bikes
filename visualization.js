@@ -45,14 +45,14 @@ $(function() {
 
         let xScale = d3.scaleLinear()
             .domain([0, data.length])
-            .range([20, 480])
+            .range([20, 480]);
 
-        // Notice that the yScale is not inverted on the yScale
+        // yScale is not inverted on the yScale
         let yScale = d3.scaleLinear()
             .domain([0, 100])
             .range([480,20]);
 
-        // We create a heightscale where the y is inverted!
+        // heightscale where the y is inverted
         let heightScale = d3.scaleLinear()
             .domain([0, 100])
             .range([0, 460]);
