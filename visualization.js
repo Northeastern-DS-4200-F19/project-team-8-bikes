@@ -5,10 +5,25 @@
 $(function() {
     d3.csv("data/Street Segment Bike Lanes.csv").then(renderChart);
 
+    // create one data object for each bike lane type on each street
     function formatData(data, bikeLaneTypes) {
         let newData = [];
 
-        data.forEach(d => {
+        data.forEach((d, i) => {
+            let bikeLanes = [];
+            bikeLaneTypes.forEach((bl, j) => {
+                bikeLanes.push({
+                    location: d["Location"],
+                    neighborhood: d["Neighborhood"],
+                    type: bl,
+                    segments: d["Segments"],
+                    percent: d[bl],
+                    x: i,
+                    y: j,
+                })
+            });
+            newData.push(bikeLanes);
+            /*
             bikeLaneTypes.forEach((bl, i) => {
                 newData.push({
                     location: d["Location"],
@@ -18,7 +33,7 @@ $(function() {
                     percent: d[bl],
                     y: i,
                 });
-            });
+            });*/
         });
 
         return newData;
@@ -82,22 +97,23 @@ $(function() {
 
         // Create groups for each series, rects for each segment
         let groups = svg.selectAll("g.bars")
-            .data(data)
+            .data(lanes)
             .enter()
                 .append("g")
                 .attr("class", "bars")
-                .style("fill", (d, i) => colorScale[i]);
 
-        //
+        // create bar rectangles
         let rect = groups.selectAll("rect")
-            .data(lanes)
+            .data(d => d)
             .enter()
                 .append("rect")
-                .attr("x", (d, i) => xScale(Math.floor(i/data.length) + 1))
-                .attr("y", (d, i) => yScale(d.percent - Math.floor(i/data.length) + 1))
-                .attr("height", d => yScale(d.percent))
-                .attr("width", (p, i) => 25)
-                .attr("class", d => `street-${d.location.replace(/ /g, '-')}`)
+                    .attr("x", (d, i) => xScale(d.x+1)-10)
+                    .attr("y", (d, i) => yScale(d.percent - d.y))
+                    .attr("height", d => yScale(d.percent))
+                    .attr("width", () => 25)
+                    .attr("class",
+                            d => `street-${d.location.toLowerCase().replace(/\s/g, '-')}`)
+                    .style("fill", (d, i) => colorScale[i]);
             // for adding tooltips
             /*.on("mouseover", () => tooltip.style("display", null))
                 .on("mouseout", () => tooltip.style("display", "none"))
