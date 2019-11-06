@@ -34,11 +34,7 @@ $(function() {
         let headers = Object.keys(data[0]);
         let bikeLaneTypes = headers.slice(2, 10);
         let lanes = formatData(data, bikeLaneTypes);
-        console.log(lanes);
 
-        // sources:
-        //https://bl.ocks.org/KingOfCramers/04dcd9742a2be13d99db5f7a7480b4ca
-        //http://bl.ocks.org/mstanaland/6100713
         let svg = d3.select("#vis-svg")
                 .attr("width", 550)
                 .attr("height", 500);
