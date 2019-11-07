@@ -2,8 +2,15 @@
 // converts to lowercase & replaces spaces with '-'
 const formatStreetName = street => street.toLowerCase().replace(/\s/g, '-');
 
+const asNumber = item => item==="n/a" ? 0 : Number(item);
+
+const removeSection = streetName => {
+    let temp = streetName.split(" ");
+    return temp.slice(0, temp.indexOf("of")-1).join(" ");
+};
+
 // create one data object for each bike lane type on each street
-function formatData(data, bikeLaneTypes) {
+function formatBikeLaneData(data, bikeLaneTypes) {
     let newData = [];
 
     data.forEach((d, i) => {
@@ -25,23 +32,67 @@ function formatData(data, bikeLaneTypes) {
     return newData;
 }
 
+function formatAccidentData(data) {
+    let newData = [];
+
+    data.forEach((d, i) => {
+        let bikeLanes = [];
+        bikeLaneTypes.forEach((bl, j) => {
+            bikeLanes.push({
+                location: d["Location"],
+                neighborhood: d["Neighborhood"],
+                type: bl,
+                segments: d["Segments"],
+                percent: d[bl],
+                x: i,
+                y: j>0 ? Number(bikeLanes[j-1].y) + Number(bikeLanes[j-1].percent) : 0,
+            })
+        });
+        newData.push(bikeLanes);
+    });
+
+    return newData;
+}
+
+function formatTrafficData(data, times) {
+    let parseTime = d3.timeParse("%I %p");
+    let newData = [];
+
+    data.filter(item => item["Direction"]==="Total")
+        .forEach(street => {
+            times.forEach(time => {
+                newData.push({
+                    time: parseTime(time),
+                    quantity: street[time],
+                    location: street["Location"],
+                    type: street["Vehicle Type"],
+                    street: removeSection(street["Location"])
+                });
+            });
+        });
+
+    return newData;
+}
+
 /* document loaded */
 $(function() {
-    d3.csv("data/Street Segment Bike Lanes.csv").then(renderBarChart);
+    d3.csv("data/Street Segment Bike Lanes.csv")
+        .then((bikeLanes) => d3.csv("data/Accidents Bike Lanes.csv")
+            .then((accidents) => renderBarChart(bikeLanes, accidents)));
     d3.csv("data/BikeMVCounts.csv").then(renderLineChart);
 
-    function renderBarChart(data) {
-        let streets = data.map(d => d.location);
-        let headers = Object.keys(data[0]);
+    function renderBarChart(bikeLanes, accidents) {
+        let streets = bikeLanes.map(d => d.location);
+        let headers = Object.keys(bikeLanes[0]);
         let bikeLaneTypes = headers.slice(2, 10);
-        let lanes = formatData(data, bikeLaneTypes);
+        let lanes = formatBikeLaneData(bikeLanes, bikeLaneTypes);
 
         let svg = d3.select("#vis-svg")
                 .attr("width", 550)
                 .attr("height", 500);
 
         let xScale = d3.scaleLinear()
-            .domain([0, data.length])
+            .domain([0, bikeLanes.length])
             .range([20, 480]);
 
         // yScale is not inverted on the yScale
@@ -62,7 +113,7 @@ $(function() {
 
         let xAxis = d3.axisBottom()
             .scale(xScale)
-            .tickFormat((d) => console.log(data[d]));
+            .tickFormat((d) => d.location);
 
         svg.append("g")
             .attr("class", "yAxis")
@@ -111,31 +162,30 @@ $(function() {
     }
 
     function renderLineChart(data) {
-        let margin = {top: 20, right: 20, bottom: 30, left: 50},
+        let margin = {
+                top: 20,
+                right: 20,
+                bottom: 30,
+                left: 50
+            },
             width = 960 - margin.left - margin.right,
             height = 500 - margin.top - margin.bottom;
-
-        // format the data
-        data.forEach(function(d) {
-            d.date = d["12 PM"]==="n/a" ? 0 : Number(d["12 PM"]);
-            //d.close = +d.close;
-        });
-
-        // parse the date / time
         let parseTime = d3.timeParse("%I %p");
+        let times = Object.keys(data[0]).filter(key => parseTime(key) != null);
+        let traffic = formatTrafficData(data, times);
 
         // set the ranges
-        let x = d3.scaleTime().range([0, width]);
-        let y = d3.scaleLinear().range([height, 0]);
-
-        // Scale the range of the data
-        x.domain(d3.extent(data, function(d) { return d.date; }));
-        y.domain([0, d3.max(data, function(d) { return d.date; })]);
+        let x = d3.scaleTime()
+            .domain(d3.extent(data, d => d.date ))
+            .range([0, width]);
+        let y = d3.scaleLinear()
+            .domain([0, d3.max(data, d => d.date )])
+            .range([height, 0]);
 
         // define the line
-        let valueline = d3.line()
-            .x(function(d) { return x(d["12 PM"]==="n/a" ? 0 : Number(d["12 PM"]) ); })
-            .y(function(d) { return y(d["12 PM"]==="n/a" ? 0 : Number(d["12 PM"]) ); });
+        let valueLine = d3.line()
+            .x(d => x(asNumber(d["12 PM"])))
+            .y(d => y(asNumber(d["12 PM"])));
 
         // append the svg object to the body of the page
         // appends a 'group' element to 'svg'
@@ -147,15 +197,11 @@ $(function() {
             .attr("transform",
                 "translate(" + margin.left + "," + margin.top + ")");
 
-        // Get the data
-
-
-
-        // Add the valueline path.
+        // Add the valueLine path.
         svg.append("path")
             .data([data])
             .attr("class", "line")
-            .attr("d", valueline);
+            .attr("d", valueLine);
 
         // Add the X Axis
         svg.append("g")
