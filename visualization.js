@@ -101,8 +101,8 @@ $(function() {
                     .on("mouseover", () => tooltip.style("display", null))
                     .on("mouseout", () => tooltip.style("display", "none"))
                     .on("mousemove", d => {
-                        var xPosition = d3.mouse(this)[0] - 15;
-                        var yPosition = d3.mouse(this)[1] - 25;
+                        let xPosition = d3.mouse(this)[0] - 15;
+                        let yPosition = d3.mouse(this)[1] - 25;
                         tooltip.attr("transform", "translate(" + xPosition + "," + yPosition + ")");
                         tooltip.select("text").text(d.y);
                     })*/;
@@ -111,58 +111,60 @@ $(function() {
     }
 
     function renderLineChart(data) {
-        var margin = {top: 20, right: 20, bottom: 30, left: 50},
+        let margin = {top: 20, right: 20, bottom: 30, left: 50},
             width = 960 - margin.left - margin.right,
             height = 500 - margin.top - margin.bottom;
 
-// parse the date / time
-        var parseTime = d3.timeParse("%d-%b-%y");
+        // format the data
+        data.forEach(function(d) {
+            d.date = d["12 PM"]==="n/a" ? 0 : Number(d["12 PM"]);
+            //d.close = +d.close;
+        });
 
-// set the ranges
-        var x = d3.scaleTime().range([0, width]);
-        var y = d3.scaleLinear().range([height, 0]);
+        // parse the date / time
+        let parseTime = d3.timeParse("%I %p");
 
-// define the line
-        var valueline = d3.line()
+        // set the ranges
+        let x = d3.scaleTime().range([0, width]);
+        let y = d3.scaleLinear().range([height, 0]);
+
+        // Scale the range of the data
+        x.domain(d3.extent(data, function(d) { return d.date; }));
+        y.domain([0, d3.max(data, function(d) { return d.date; })]);
+
+        // define the line
+        let valueline = d3.line()
             .x(function(d) { return x(d["12 PM"]==="n/a" ? 0 : Number(d["12 PM"]) ); })
             .y(function(d) { return y(d["12 PM"]==="n/a" ? 0 : Number(d["12 PM"]) ); });
 
-// append the svg obgect to the body of the page
-// appends a 'group' element to 'svg'
-// moves the 'group' element to the top left margin
-        var svg = d3.select("body").append("svg")
+        // append the svg object to the body of the page
+        // appends a 'group' element to 'svg'
+        // moves the 'group' element to the top left margin
+        let svg = d3.select("body").append("svg")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
             .append("g")
             .attr("transform",
                 "translate(" + margin.left + "," + margin.top + ")");
 
-// Get the data
+        // Get the data
 
-            // format the data
-           /* data.forEach(function(d) {
-                d.date = parseTime(d.date);
-                d.close = +d.close;
-            });*/
 
-            // Scale the range of the data
-            x.domain(d3.extent(data, function(d) { return d.date; }));
-            y.domain([0, d3.max(data, function(d) { return d.close; })]);
 
-            // Add the valueline path.
-            svg.append("path")
-                .data([data])
-                .attr("class", "line")
-                .attr("d", valueline);
+        // Add the valueline path.
+        svg.append("path")
+            .data([data])
+            .attr("class", "line")
+            .attr("d", valueline);
 
-            // Add the X Axis
-            svg.append("g")
-                .attr("transform", "translate(0," + height + ")")
-                .call(d3.axisBottom(x));
+        // Add the X Axis
+        svg.append("g")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.axisBottom(x));
 
-            // Add the Y Axis
-            svg.append("g")
-                .call(d3.axisLeft(y));
+        // Add the Y Axis
+        svg.append("g")
+            .call(d3.axisLeft(y));
 
     }
 });
