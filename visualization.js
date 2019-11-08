@@ -206,7 +206,7 @@ $(function() {
             .attr("x", (width / 2))             
             .attr("y", -20)
             .attr("text-anchor", "middle")  
-            .style("font-size", "16px") 
+            .style("font-size", "20px") 
             .style("text-decoration", "underline")  
             .text("Bike Lane Type Distribution and Accidents for Boston Streets");            
 
