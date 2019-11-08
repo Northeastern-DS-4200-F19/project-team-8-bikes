@@ -107,10 +107,10 @@ $(function() {
         let lanes = formatBikeLaneData(bikeLanes, bikeLaneTypes);
 
         let margin = {
-                top: 20,
+                top: 80,
                 right: 20,
                 bottom: 80,
-                left: 20
+                left: 80
             },
             width = 600,
             height = 480,
@@ -119,7 +119,12 @@ $(function() {
 
         let svg = d3.select("#vis-svg")
                 .attr("width", totalWidth)
-                .attr("height", totalHeight);
+                .attr("height", totalHeight)
+                .attr("width", width)
+                .attr("height", height)
+        .append("g")
+            .attr("transform",
+                "translate(" + margin.left + "," + margin.top + ")");;
 
         let xScale = d3.scaleLinear()
             .domain([0, bikeLanes.length])
@@ -208,9 +213,9 @@ $(function() {
             .attr("x", (width / 2))             
             .attr("y", -20)
             .attr("text-anchor", "middle")  
-            .style("font-size", "16px") 
+            .style("font-size", "24px")
             .style("text-decoration", "underline")  
-            .text("Bike Lane Type Distribution and Accidents for Boston Streets");
+            .text("Bike Lanes for Boston Streets");
 
         let legend = svg.append("g")
             .attr("class", "legend")
@@ -228,13 +233,13 @@ $(function() {
 
     function renderLineChart(data) {
         let margin = {
-                top: 40,
+                top: 60,
                 right: 20,
-                bottom: 75,
-                left: 75
+                bottom: 80,
+                left: 80
             },
-            width = 720 - margin.left - margin.right,
-            height = 375 - margin.top - margin.bottom;
+            width = 590 - margin.left - margin.right,
+            height = 405 - margin.top - margin.bottom;
         let parseTime = d3.timeParse("%I %p");
         let times = Object.keys(data[0]).filter(key => parseTime(key) != null);
         let traffic = formatTrafficData(data, times);
@@ -293,6 +298,7 @@ $(function() {
         svg.append("text")             
         .attr("transform",`translate(${width/2},${height + margin.top + 20})`)
         .style("text-anchor", "middle")
+        .style("font-size", "13px")
         .text("Time of Day");
 
         // text label for the y axis
@@ -302,6 +308,7 @@ $(function() {
             .attr("x",0 - (height / 2))
             .attr("dy", "1em")
             .style("text-anchor", "middle")
+            .style("font-size", "13px")
             .text("Traffic Level");
 
         // Add a title
@@ -312,7 +319,6 @@ $(function() {
             .style("font-size", "16px") 
             .style("text-decoration", "underline")  
             .text("Car and Bike Traffic Levels");
-
     }
 });
 
