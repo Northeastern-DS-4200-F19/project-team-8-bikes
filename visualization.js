@@ -217,11 +217,11 @@ $(function() {
         let margin = {
                 top: 40,
                 right: 20,
-                bottom: 75,
-                left: 75
+                bottom: 120,
+                left: 80
             },
-            width = 720 - margin.left - margin.right,
-            height = 375 - margin.top - margin.bottom;
+            width = 640 - margin.left - margin.right,
+            height = 450 - margin.top - margin.bottom;
         let parseTime = d3.timeParse("%I %p");
         let times = Object.keys(data[0]).filter(key => parseTime(key) != null);
         let traffic = formatTrafficData(data, times);
