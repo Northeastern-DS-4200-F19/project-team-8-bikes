@@ -259,7 +259,7 @@ $(function() {
             .attr("class", "line bike")
             .attr("d", valueLine)
             .attr("fill", "none")
-            .attr("stroke", "#000");
+            .attr("stroke", "#b35a2d");
 
         // Add the valueLine path for motor vehicles
         svg.append("path")
@@ -267,7 +267,7 @@ $(function() {
             .attr("class", "line mv")
             .attr("d", valueLine)
             .attr("fill", "none")
-            .attr("stroke", "#000");
+            .attr("stroke", "#346d94");
 
         // Add the X Axis
         svg.append("g")
