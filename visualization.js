@@ -106,9 +106,18 @@ $(function() {
         let bikeLaneTypes = headers.slice(2, 10);
         let lanes = formatBikeLaneData(bikeLanes, bikeLaneTypes);
 
+        let margin = {
+            top: 40,
+            right: 20,
+            bottom: 80,
+            left: 40
+        },
+        width = 550,
+        height = 500;
+
         let svg = d3.select("#vis-svg")
-                .attr("width", 550)
-                .attr("height", 500);
+                .attr("width", width)
+                .attr("height", height);
 
         let xScale = d3.scaleLinear()
             .domain([0, bikeLanes.length])
@@ -176,19 +185,43 @@ $(function() {
                         tooltip.attr("transform", "translate(" + xPosition + "," + yPosition + ")");
                         tooltip.select("text").text(d.y);
                     })*/;
+        
+        // text label for the x axis
+        svg.append("text")             
+        .attr("transform","translate(" + (width/2) + " ," + (height + margin.top + 20) + ")")
+        .style("text-anchor", "middle")
+        .text("Streets");
+
+        // text label for the y axis
+        svg.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 0 - margin.left)
+            .attr("x",0 - (height / 2))
+            .attr("dy", "1em")
+            .style("text-anchor", "middle")
+            .text("Percentage of Street");
+
+        // Add a title
+        svg.append("text")
+            .attr("x", (width / 2))             
+            .attr("y", -20)
+            .attr("text-anchor", "middle")  
+            .style("font-size", "16px") 
+            .style("text-decoration", "underline")  
+            .text("Bike Lane Type Distribution and Accidents for Boston Streets");            
 
         svg.append("svg")
     }
 
     function renderLineChart(data) {
         let margin = {
-                top: 20,
+                top: 40,
                 right: 20,
-                bottom: 30,
-                left: 50
+                bottom: 75,
+                left: 75
             },
-            width = 960 - margin.left - margin.right,
-            height = 500 - margin.top - margin.bottom;
+            width = 720 - margin.left - margin.right,
+            height = 375 - margin.top - margin.bottom;
         let parseTime = d3.timeParse("%I %p");
         let times = Object.keys(data[0]).filter(key => parseTime(key) != null);
         let traffic = formatTrafficData(data, times);
@@ -215,10 +248,10 @@ $(function() {
         let svg = d3.select(".vis-holder")
             .append("svg")
                 .attr("width", width + margin.left + margin.right)
-                .attr("height", height + margin.top + margin.bottom);
-
-        let group = svg.append("g")
-            .attr("transform", `translate(${margin.left},${margin.top})`);
+                .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+            .attr("transform",
+                "translate(" + margin.left + "," + margin.top + ")");
 
         // Add the valueLine path for bikes
         svg.append("path")
@@ -244,6 +277,30 @@ $(function() {
         // Add the Y Axis
         svg.append("g")
             .call(d3.axisLeft(y));
+        
+        // text label for the x axis
+        svg.append("text")             
+        .attr("transform","translate(" + (width/2) + " ," + (height + margin.top + 20) + ")")
+        .style("text-anchor", "middle")
+        .text("Time of Day");
+
+        // text label for the y axis
+        svg.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 0 - margin.left)
+            .attr("x",0 - (height / 2))
+            .attr("dy", "1em")
+            .style("text-anchor", "middle")
+            .text("Traffic Level");
+
+        // Add a title
+        svg.append("text")
+            .attr("x", (width / 2))             
+            .attr("y", 0 - (margin.top / 2))
+            .attr("text-anchor", "middle")  
+            .style("font-size", "16px") 
+            .style("text-decoration", "underline")  
+            .text("Car and Bike Traffic Levels");
     }
 });
 
