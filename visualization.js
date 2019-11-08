@@ -107,10 +107,10 @@ $(function() {
         let lanes = formatBikeLaneData(bikeLanes, bikeLaneTypes);
 
         let margin = {
-            top: 40,
+            top: 80,
             right: 20,
             bottom: 80,
-            left: 40
+            left: 80
         },
         width = 550,
         height = 500;
@@ -191,7 +191,7 @@ $(function() {
         
         // text label for the x axis
         svg.append("text")             
-        .attr("transform","translate(" + (width/2) + " ," + (height + margin.top + 20) + ")")
+        .attr("transform","translate(" + (width/2) + " ," + (height + 40) + ")")
         .style("text-anchor", "middle")
         .text("Streets");
 
@@ -218,7 +218,7 @@ $(function() {
 
     function renderLineChart(data) {
         let margin = {
-                top: 40,
+                top: 60,
                 right: 20,
                 bottom: 80,
                 left: 80
@@ -283,8 +283,9 @@ $(function() {
         
         // text label for the x axis
         svg.append("text")             
-        .attr("transform","translate(" + (width/2) + " ," + (height + margin.top + 20) + ")")
+        .attr("transform","translate(" + (width/2) + " ," + (height + 75) + ")")
         .style("text-anchor", "middle")
+        .style("font-size", "13px")
         .text("Time of Day");
 
         // text label for the y axis
@@ -294,6 +295,7 @@ $(function() {
             .attr("x",0 - (height / 2))
             .attr("dy", "1em")
             .style("text-anchor", "middle")
+            .style("font-size", "13px")
             .text("Traffic Level");
 
         // Add a title
