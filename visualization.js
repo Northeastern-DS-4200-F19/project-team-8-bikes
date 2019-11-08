@@ -89,7 +89,7 @@ function totalTraffic(streets, times) {
 
     return keys.map(key => ({
         time: d3.timeParse("%H")(key),
-        quantity: timeTotals[key]
+        quantity: timeTotals[key],
     }))
 }
 
@@ -107,37 +107,39 @@ $(function() {
         let lanes = formatBikeLaneData(bikeLanes, bikeLaneTypes);
 
         let margin = {
-            top: 40,
-            right: 20,
-            bottom: 80,
-            left: 40
-        },
-        width = 550,
-        height = 500;
+                top: 20,
+                right: 20,
+                bottom: 80,
+                left: 20
+            },
+            width = 600,
+            height = 480,
+            totalHeight = height + margin.top + margin.bottom,
+            totalWidth = width + margin.left + margin.right;
 
         let svg = d3.select("#vis-svg")
-                .attr("width", width)
-                .attr("height", height);
+                .attr("width", totalWidth)
+                .attr("height", totalHeight);
 
         let xScale = d3.scaleLinear()
             .domain([0, bikeLanes.length])
-            .range([20, 480]);
+            .range([margin.left, width + margin.left]);
 
         // yScale is not inverted on the yScale
         let yScale = d3.scaleLinear()
             .domain([0, 100])
-            .range([480,20]);
+            .range([height + margin.top, margin.top]);
 
         // heightscale where the y is inverted
         let heightScale = d3.scaleLinear()
             .domain([0, 100])
-            .range([0, 460]);
+            .range([0, height]);
 
         let colorScale = ["#fcd88a", "#cf7c1c", "#93c464", "#75734F", "#5eafc6", "#41a368", "#41a000", "#41eae4"];
 
         let yAxis = d3.axisLeft()
             .scale(yScale)
-            .tickSize(-500);
+            .tickSize(-width);
 
         let xAxis = d3.axisBottom()
             .scale(xScale)
@@ -146,12 +148,12 @@ $(function() {
         svg.append("g")
             .attr("class", "yAxis")
             .call(yAxis)
-            .attr("transform",`translate(${20}, 0)`);
+            .attr("transform",`translate(${margin.left}, 0)`);
 
         svg.append("g")
             .attr("class", "xAxis")
             .call(xAxis)
-            .attr("transform",`translate(0, ${480})`);
+            .attr("transform",`translate(0, ${totalHeight - margin.bottom})`);
 
         d3.select("g.xAxis").selectAll("g.tick").selectAll("text");
 
@@ -188,7 +190,7 @@ $(function() {
         
         // text label for the x axis
         svg.append("text")             
-        .attr("transform","translate(" + (width/2) + " ," + (height + margin.top + 20) + ")")
+        .attr("transform",`translate(${width/2},${height + margin.top + 20})`)
         .style("text-anchor", "middle")
         .text("Streets");
 
@@ -208,9 +210,20 @@ $(function() {
             .attr("text-anchor", "middle")  
             .style("font-size", "16px") 
             .style("text-decoration", "underline")  
-            .text("Bike Lane Type Distribution and Accidents for Boston Streets");            
+            .text("Bike Lane Type Distribution and Accidents for Boston Streets");
 
-        svg.append("svg")
+        let legend = svg.append("g")
+            .attr("class", "legend")
+            .attr("transform", `translate(10, 10)`)
+            .style("font-size", "12px")
+            .call(d3.legend);
+
+        setTimeout(function() {
+            legend
+                .style("font-size","20px")
+                .attr("data-style-padding",10)
+                .call(d3.legend)
+        },1000)
     }
 
     function renderLineChart(data) {
@@ -226,7 +239,6 @@ $(function() {
         let times = Object.keys(data[0]).filter(key => parseTime(key) != null);
         let traffic = formatTrafficData(data, times);
 
-
         // set the ranges
         let x = d3.scaleTime()
             .domain(d3.extent(traffic.bike.map(d => d.time)))
@@ -234,8 +246,6 @@ $(function() {
         let y = d3.scaleLinear()
             .domain([0, d3.max(totalTraffic(traffic.mv, times), d => d.quantity)])
             .range([height, 0]);
-
-        console.log(totalTraffic(traffic.bike, times));
 
         // define the line
         let valueLine = d3.line()
@@ -249,9 +259,8 @@ $(function() {
             .append("svg")
                 .attr("width", width + margin.left + margin.right)
                 .attr("height", height + margin.top + margin.bottom)
-        .append("g")
-            .attr("transform",
-                "translate(" + margin.left + "," + margin.top + ")");
+                .append("g")
+                    .attr("transform",`translate(${margin.left},${margin.top})`);
 
         // Add the valueLine path for bikes
         svg.append("path")
@@ -259,6 +268,7 @@ $(function() {
             .attr("class", "line bike")
             .attr("d", valueLine)
             .attr("fill", "none")
+            .attr("data-legend", d => "Bikes")
             .attr("stroke", "#b35a2d");
 
         // Add the valueLine path for motor vehicles
@@ -267,6 +277,7 @@ $(function() {
             .attr("class", "line mv")
             .attr("d", valueLine)
             .attr("fill", "none")
+            .attr("data-legend", () => "Motor Vehicles")
             .attr("stroke", "#346d94");
 
         // Add the X Axis
@@ -280,7 +291,7 @@ $(function() {
         
         // text label for the x axis
         svg.append("text")             
-        .attr("transform","translate(" + (width/2) + " ," + (height + margin.top + 20) + ")")
+        .attr("transform",`translate(${width/2},${height + margin.top + 20})`)
         .style("text-anchor", "middle")
         .text("Time of Day");
 
@@ -301,6 +312,7 @@ $(function() {
             .style("font-size", "16px") 
             .style("text-decoration", "underline")  
             .text("Car and Bike Traffic Levels");
+
     }
 });
 
