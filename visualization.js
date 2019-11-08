@@ -117,7 +117,10 @@ $(function() {
 
         let svg = d3.select("#vis-svg")
                 .attr("width", width)
-                .attr("height", height);
+                .attr("height", height)
+        .append("g")
+            .attr("transform",
+                "translate(" + margin.left + "," + margin.top + ")");;
 
         let xScale = d3.scaleLinear()
             .domain([0, bikeLanes.length])
@@ -206,9 +209,9 @@ $(function() {
             .attr("x", (width / 2))             
             .attr("y", -20)
             .attr("text-anchor", "middle")  
-            .style("font-size", "20px") 
+            .style("font-size", "24px") 
             .style("text-decoration", "underline")  
-            .text("Bike Lane Type Distribution and Accidents for Boston Streets");            
+            .text("Bike Lanes for Boston Streets");            
 
         svg.append("svg")
     }
@@ -217,11 +220,11 @@ $(function() {
         let margin = {
                 top: 40,
                 right: 20,
-                bottom: 120,
+                bottom: 80,
                 left: 80
             },
-            width = 640 - margin.left - margin.right,
-            height = 450 - margin.top - margin.bottom;
+            width = 590 - margin.left - margin.right,
+            height = 405 - margin.top - margin.bottom;
         let parseTime = d3.timeParse("%I %p");
         let times = Object.keys(data[0]).filter(key => parseTime(key) != null);
         let traffic = formatTrafficData(data, times);
