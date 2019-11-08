@@ -55,14 +55,17 @@ function formatAccidentData(data) {
 }
 
 function formatTrafficData(data, times) {
-    let parseTime = d3.timeParse("%I %p");
-    let newData = [];
+    let newData = {
+        bike: [],
+        mv: []
+    };
 
     data.filter(item => item["Direction"]==="Total")
         .forEach(street => {
             times.forEach(time => {
-                newData.push({
-                    time: parseTime(time),
+                let list = street["Vehicle Type"]==="Bike" ? newData.bike : newData.mv;
+                list.push({
+                    time: d3.timeParse("%I %p")(time),
                     quantity: street[time],
                     location: street["Location"],
                     type: street["Vehicle Type"],
@@ -72,6 +75,22 @@ function formatTrafficData(data, times) {
         });
 
     return newData;
+}
+
+function totalTraffic(streets, times) {
+    let timeTotals = {};
+    let keys;
+    times.forEach((time, i) => timeTotals[i] = 0);
+
+    streets.forEach(street =>
+        timeTotals[street.time.getHours()] += Number(street.quantity)
+    );
+    keys = Object.keys(timeTotals);
+
+    return keys.map(key => ({
+        time: d3.timeParse("%H")(key),
+        quantity: timeTotals[key]
+    }))
 }
 
 /* document loaded */
@@ -174,44 +193,57 @@ $(function() {
         let times = Object.keys(data[0]).filter(key => parseTime(key) != null);
         let traffic = formatTrafficData(data, times);
 
+
         // set the ranges
         let x = d3.scaleTime()
-            .domain(d3.extent(data, d => d.date ))
+            .domain(d3.extent(traffic.bike.map(d => d.time)))
             .range([0, width]);
         let y = d3.scaleLinear()
-            .domain([0, d3.max(data, d => d.date )])
+            .domain([0, d3.max(totalTraffic(traffic.mv, times), d => d.quantity)])
             .range([height, 0]);
+
+        console.log(totalTraffic(traffic.bike, times));
 
         // define the line
         let valueLine = d3.line()
-            .x(d => x(asNumber(d["12 PM"])))
-            .y(d => y(asNumber(d["12 PM"])));
+            .x(d => (x(d.time)))
+            .y(d => (y(d.quantity)));
 
         // append the svg object to the body of the page
         // appends a 'group' element to 'svg'
         // moves the 'group' element to the top left margin
-        let svg = d3.select("body").append("svg")
-            .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom)
-            .append("g")
-            .attr("transform",
-                "translate(" + margin.left + "," + margin.top + ")");
+        let svg = d3.select(".vis-holder")
+            .append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom);
 
-        // Add the valueLine path.
+        let group = svg.append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
+
+        // Add the valueLine path for bikes
         svg.append("path")
-            .data([data])
-            .attr("class", "line")
-            .attr("d", valueLine);
+            .data([totalTraffic(traffic.bike, times)])
+            .attr("class", "line bike")
+            .attr("d", valueLine)
+            .attr("fill", "none")
+            .attr("stroke", "#000");
+
+        // Add the valueLine path for motor vehicles
+        svg.append("path")
+            .data([totalTraffic(traffic.mv, times)])
+            .attr("class", "line mv")
+            .attr("d", valueLine)
+            .attr("fill", "none")
+            .attr("stroke", "#000");
 
         // Add the X Axis
         svg.append("g")
-            .attr("transform", "translate(0," + height + ")")
+            .attr("transform", `translate(0,${height})`)
             .call(d3.axisBottom(x));
 
         // Add the Y Axis
         svg.append("g")
             .call(d3.axisLeft(y));
-
     }
 });
 
