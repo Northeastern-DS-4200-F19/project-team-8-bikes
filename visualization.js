@@ -2,7 +2,18 @@
 // converts to lowercase & replaces spaces with '-'
 const formatStreetName = street => street.toLowerCase().replace(/\s/g, '-');
 
-const asNumber = item => item==="n/a" ? 0 : Number(item);
+const laneTypeNames = {
+    BL: "Bike Lane",
+    BFBL: "Buffered Bike Lane",
+    SBL: "Separated bike lane",
+    SLM: "Shared lane markings",
+    PSL: "Priority shared lane markings",
+    CL: "Climbing lane/hybrid",
+    BSBL: "Bus/bike lane",
+    SBLBL: "Separated bike lane on one side, bike lane on the opposite side",
+};
+
+//const asNumber = item => item==="n/a" ? 0 : Number(item);
 
 const removeSection = streetName => {
     let temp = streetName.split(" ");
@@ -32,9 +43,9 @@ function formatBikeLaneData(data, bikeLaneTypes) {
     return newData;
 }
 
-function formatAccidentData(data) {
+/*function formatAccidentData(data) {
 
-}
+}*/
 
 function formatTrafficData(data, times) {
     let newData = {
@@ -75,9 +86,10 @@ function totalTraffic(streets, times) {
     }))
 }
 
-function returnText(data) {
-    let blType = "Bike Lane Type: " + data.type;
-    let stSegments = "Street Segments: ";
+function hoverText(data, bikeLaneTypeNames) {
+    let blType = "Bike Lane Type: " + bikeLaneTypeNames[data.type];
+    //TODO add segments
+    //let stSegments = "Street Segments: ";
     return blType;
 }
 
@@ -95,7 +107,7 @@ $(function() {
         let lanes = formatBikeLaneData(bikeLanes, bikeLaneTypes);
 
         let margin = {
-                top: 40,
+                top: 20,
                 right: 20,
                 bottom: 40,
                 left: 40
@@ -112,7 +124,7 @@ $(function() {
                 .attr("height", height)
         .append("g")
             .attr("transform",
-                "translate(" + margin.left + "," + margin.top + ")");
+                `translate(${margin.left},${margin.top})`);
 
         let xScale = d3.scaleLinear()
             .domain([0, bikeLanes.length])
@@ -183,7 +195,7 @@ $(function() {
                     .attr("class", d => `street-${formatStreetName(d.location)} lane-${d.type}`)
                     .style("fill", (d, i) => colorScale[i])
                     .on("mouseover", function(d){
-                        tooltip.text(returnText(d));
+                        tooltip.text(hoverText(d, laneTypeNames));
                         return tooltip.style("visibility", "visible");
                     })
                     .on("mousemove", () =>
@@ -200,7 +212,7 @@ $(function() {
         // text label for the y axis
         svg.append("text")
             .attr("transform", "rotate(-90)")
-            .attr("y", 0 - margin.left)
+            .attr("y", -margin.left)
             .attr("x",0 - (height / 2))
             .attr("dy", "1em")
             .style("text-anchor", "middle")
@@ -208,7 +220,7 @@ $(function() {
 
         // Add a title
         svg.append("text")
-            .attr("x", (width / 2))
+            .attr("x", width / 2)
             .attr("y", -20)
             .attr("text-anchor", "middle")
             .style("font-size", "24px")
@@ -246,7 +258,7 @@ $(function() {
             .attr("y", radius/2)
             .style("fill", "#272727")
             .style("font-size", 12)
-            .text(d=>d);
+            .text(d=>laneTypeNames[d]);
     }
 
     function renderLineChart(data) {
