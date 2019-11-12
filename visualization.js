@@ -96,7 +96,7 @@ function totalTraffic(streets, times) {
 function returnText(data) {
     let bl_type = "Bike Lane Type: " + data.type;
     let st_segments = "Street Segments: "
-    return bl_type + '\n' + st_segments
+    return bl_type
 }
 
 /* document loaded */
