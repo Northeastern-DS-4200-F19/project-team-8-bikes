@@ -9,6 +9,9 @@ const removeSection = streetName => {
     return temp.slice(0, temp.indexOf("of")-1).join(" ");
 };
 
+const category = ["BL", "BFBL", "SBL", "SLM", "PSL",'CL','BSBL','SBLBL'];
+
+
 // create one data object for each bike lane type on each street
 function formatBikeLaneData(data, bikeLaneTypes) {
     let newData = [];
@@ -93,6 +96,12 @@ function totalTraffic(streets, times) {
     }))
 }
 
+function returnText(data) {
+    let bl_type = "Bike Lane Type: " + data.type;
+    let st_segments = "Street Segments: "
+    return bl_type
+}
+
 /* document loaded */
 $(function() {
     d3.csv("data/Street Segment Bike Lanes.csv")
@@ -171,6 +180,14 @@ $(function() {
                 .append("g")
                 .attr("class", d => `bars street-${formatStreetName(d[0].location)}`);
 
+        var tooltip = d3.select("body")
+            .append("div")
+            .style("position", 'absolute')
+            .style("z-index", "10")
+            .style("visibility", "hidden")
+            .style("background", "#eee")
+            .text("a simple tooltip");
+
         // create bar rectangles
         let rect = groups.selectAll("rect")
             .data(d => d)
@@ -182,17 +199,12 @@ $(function() {
                     .attr("width", () => 25)
                     .attr("class", d => `street-${formatStreetName(d.location)} lane-${d.type}`)
                     .style("fill", (d, i) => colorScale[i])
-                    // for adding tooltips
-                    /*
-                    .on("mouseover", () => tooltip.style("display", null))
-                    .on("mouseout", () => tooltip.style("display", "none"))
-                    .on("mousemove", d => {
-                        let xPosition = d3.mouse(this)[0] - 15;
-                        let yPosition = d3.mouse(this)[1] - 25;
-                        tooltip.attr("transform", "translate(" + xPosition + "," + yPosition + ")");
-                        tooltip.select("text").text(d.y);
-                    })*/;
-        
+                    .on("mouseover", function(d){tooltip.text(returnText(d)); return tooltip.style("visibility", "visible");})
+                    .on("mousemove", function(){return tooltip.style("top", (d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");})
+                    .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
+
+
+
         // text label for the x axis
         svg.append("text")             
         .attr("transform",`translate(${width/2},${height + margin.top + 20})`)
@@ -210,25 +222,52 @@ $(function() {
 
         // Add a title
         svg.append("text")
-            .attr("x", (width / 2))             
+            .attr("x", (width / 2))
             .attr("y", -20)
-            .attr("text-anchor", "middle")  
+            .attr("text-anchor", "middle")
             .style("font-size", "24px")
-            .style("text-decoration", "underline")  
+            .style("text-decoration", "underline")
             .text("Bike Lanes for Boston Streets");
 
-        let legend = svg.append("g")
-            .attr("class", "legend")
-            .attr("transform", `translate(10, 10)`)
-            .style("font-size", "12px")
-            .call(d3.legend);
+        svg.append("svg")
 
-        setTimeout(function() {
-            legend
-                .style("font-size","20px")
-                .attr("data-style-padding",10)
-                .call(d3.legend)
-        },1000)
+
+        //Create Legend
+        // code referenced from https://bl.ocks.org/dianaow/0da76b59a7dffe24abcfa55d5b9e163e
+
+        var color = d3.scaleOrdinal()
+                .domain(category)
+                .range(["#fcd88a", "#cf7c1c", "#93c464", "#75734F", "#5eafc6", "#41a368", "#41a000", "#41eae4"])
+
+
+        var svgLegend = svg.append('g')
+                    .attr('class', 'gLegend')
+                    .attr("transform", "translate(" + (width + 20) + "," + 0 + ")");
+
+        var R = 6;
+
+        var legend = svgLegend.selectAll('.legend')
+               .data(category)
+               .enter().append('g')
+                 .attr("class", "legend")
+                 .attr("transform", function (d, i) {return "translate(0," + i * 20 + ")"})
+
+                 legend.append("circle")
+                             .attr("class", "legend-node")
+                             .attr("cx", 0)
+                             .attr("cy", 0)
+                             .attr("r", R)
+                             .style("fill", d=>color(d));
+
+
+                           legend.append("text")
+                               .attr("class", "legend-text")
+                               .attr("x", R*2)
+                               .attr("y", R/2)
+                               .style("fill", "#A9A9A9")
+                               .style("font-size", 12)
+                               .text(d=>d)
+
     }
 
     function renderLineChart(data) {
@@ -293,7 +332,7 @@ $(function() {
         // Add the Y Axis
         svg.append("g")
             .call(d3.axisLeft(y));
-        
+
         // text label for the x axis
         svg.append("text")             
         .attr("transform",`translate(${width/2},${height + margin.top + 20})`)
@@ -313,11 +352,11 @@ $(function() {
 
         // Add a title
         svg.append("text")
-            .attr("x", (width / 2))             
+            .attr("x", (width / 2))
             .attr("y", 0 - (margin.top / 2))
-            .attr("text-anchor", "middle")  
-            .style("font-size", "16px") 
-            .style("text-decoration", "underline")  
+            .attr("text-anchor", "middle")
+            .style("font-size", "16px")
+            .style("text-decoration", "underline")
             .text("Car and Bike Traffic Levels");
     }
 });
