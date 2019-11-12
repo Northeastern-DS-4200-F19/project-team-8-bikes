@@ -93,6 +93,12 @@ function totalTraffic(streets, times) {
     }))
 }
 
+function returnText(data) {
+    let bl_type = "Bike Lane Type: " + data.type;
+    let st_segments = "Street Segments: "
+    return bl_type + '\n' + st_segments
+}
+
 /* document loaded */
 $(function() {
     d3.csv("data/Street Segment Bike Lanes.csv")
@@ -166,6 +172,14 @@ $(function() {
             .enter()
                 .append("g")
                 .attr("class", d => `bars street-${formatStreetName(d[0].location)}`);
+        
+        var tooltip = d3.select("body")
+            .append("div")
+            .style("position", 'absolute')
+            .style("z-index", "10")
+            .style("visibility", "hidden")
+            .style("background", "#eee")
+            .text("a simple tooltip");
 
         // create bar rectangles
         let rect = groups.selectAll("rect")
@@ -178,16 +192,9 @@ $(function() {
                     .attr("width", () => 25)
                     .attr("class", d => `street-${formatStreetName(d.location)} lane-${d.type}`)
                     .style("fill", (d, i) => colorScale[i])
-                    // for adding tooltips
-                    /*
-                    .on("mouseover", () => tooltip.style("display", null))
-                    .on("mouseout", () => tooltip.style("display", "none"))
-                    .on("mousemove", d => {
-                        let xPosition = d3.mouse(this)[0] - 15;
-                        let yPosition = d3.mouse(this)[1] - 25;
-                        tooltip.attr("transform", "translate(" + xPosition + "," + yPosition + ")");
-                        tooltip.select("text").text(d.y);
-                    })*/;
+                    .on("mouseover", function(d){tooltip.text(returnText(d)); return tooltip.style("visibility", "visible");})
+                    .on("mousemove", function(){return tooltip.style("top", (d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");})
+                    .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
         
         // text label for the x axis
         svg.append("text")             
