@@ -43,9 +43,9 @@ function formatBikeLaneData(data, bikeLaneTypes) {
     return newData;
 }
 
-/*function formatAccidentData(data) {
+function formatAccidentData(data) {
 
-}*/
+}
 
 function formatTrafficData(data, times) {
     let newData = {
@@ -95,6 +95,9 @@ function hoverText(data, bikeLaneTypeNames) {
 
 /* document loaded */
 $(function() {
+    let filterStreet = null;
+    let bikeLaneData, accidentData, trafficData;
+
     d3.csv("data/Street Segment Bike Lanes.csv")
         .then((bikeLanes) => d3.csv("data/Accidents Bike Lanes.csv")
             .then((accidents) => renderBarChart(bikeLanes, accidents)));
@@ -105,6 +108,8 @@ $(function() {
         let headers = Object.keys(bikeLanes[0]);
         let bikeLaneTypes = headers.slice(2, 10);
         let lanes = formatBikeLaneData(bikeLanes, bikeLaneTypes);
+        bikeLaneData = formatBikeLaneData(bikeLanes, bikeLaneTypes);
+        accidentData = formatAccidentData(accidents);
 
         let margin = {
                 top: 20,
@@ -148,7 +153,7 @@ $(function() {
             .scale(yScale)
             .tickSize(-width);
 
-        //x axis wwith labels
+        //x axis with labels
         let xAxis = d3.axisBottom()
             .scale(xScale)
             .tickFormat((d) => d.location);
@@ -194,14 +199,21 @@ $(function() {
                     .attr("width", () => 25)
                     .attr("class", d => `street-${formatStreetName(d.location)} lane-${d.type}`)
                     .style("fill", (d, i) => colorScale[i])
-                    .on("mouseover", function(d){
+                    .on("mouseover", (d, i, nodes) => {
+                        filterStreet = d.location;
+                        updateLineChart();
+                        d3.select(nodes[i]).style("border", "1px solid #000");
                         tooltip.text(hoverText(d, laneTypeNames));
                         return tooltip.style("visibility", "visible");
                     })
                     .on("mousemove", () =>
                         tooltip.style("top", (d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px")
                     )
-                    .on("mouseout", () => tooltip.style("visibility", "hidden"));
+                    .on("mouseout", (d, i, data) => {
+                        tooltip.style("visibility", "hidden");
+                        filterStreet = null;
+                        updateLineChart();
+                    });
 
         // text label for the x axis
         svg.append("text")             
@@ -272,6 +284,7 @@ $(function() {
             height = 405 - margin.top - margin.bottom;
         let parseTime = d3.timeParse("%I %p");
         let times = Object.keys(data[0]).filter(key => parseTime(key) != null);
+        trafficData = formatTrafficData(data, times);
         let traffic = formatTrafficData(data, times);
 
         // set the ranges
@@ -290,15 +303,16 @@ $(function() {
         // append the svg object to the body of the page
         // appends a 'group' element to 'svg'
         // moves the 'group' element to the top left margin
-        let svg = d3.select(".vis-holder")
+        let group = d3.select(".vis-holder")
             .append("svg")
                 .attr("width", width + margin.left + margin.right)
                 .attr("height", height + margin.top + margin.bottom)
+                .attr("class", "line-chart")
                 .append("g")
                     .attr("transform",`translate(${margin.left},${margin.top})`);
 
         // Add the valueLine path for bikes
-        svg.append("path")
+        group.append("path")
             .data([totalTraffic(traffic.bike, times)])
             .attr("class", "line bike")
             .attr("d", valueLine)
@@ -307,7 +321,7 @@ $(function() {
             .attr("stroke", "#b35a2d");
 
         // Add the valueLine path for motor vehicles
-        svg.append("path")
+        group.append("path")
             .data([totalTraffic(traffic.mv, times)])
             .attr("class", "line mv")
             .attr("d", valueLine)
@@ -316,23 +330,24 @@ $(function() {
             .attr("stroke", "#346d94");
 
         // Add the X Axis
-        svg.append("g")
+        group.append("g")
             .attr("transform", `translate(0,${height})`)
             .call(d3.axisBottom(x));
 
         // Add the Y Axis
-        svg.append("g")
+        group.append("g")
+            .attr("class", "x-axis")
             .call(d3.axisLeft(y));
 
         // text label for the x axis
-        svg.append("text")             
+        group.append("text")             
         .attr("transform",`translate(${width/2},${height + margin.top + 20})`)
         .style("text-anchor", "middle")
         .style("font-size", "13px")
         .text("Time of Day");
 
         // text label for the y axis
-        svg.append("text")
+        group.append("text")
             .attr("transform", "rotate(-90)")
             .attr("y", 0 - margin.left)
             .attr("x",0 - (height / 2))
@@ -342,13 +357,47 @@ $(function() {
             .text("Traffic Level");
 
         // Add a title
-        svg.append("text")
+        group.append("text")
             .attr("x", (width / 2))
             .attr("y", 0 - (margin.top / 2))
             .attr("text-anchor", "middle")
             .style("font-size", "16px")
             .style("text-decoration", "underline")
             .text("Car and Bike Traffic Levels");
+    }
+
+    function updateLineChart() {
+        let svg = d3.select(".line-chart");
+        let group = svg.select("g");
+        let filteredData = {};
+        Object.keys(trafficData)
+            .forEach(type => filteredData[type] = trafficData[type]
+                .filter(traffic => filterStreet===null || traffic.street===filterStreet));
+        let times = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23];
+        let height = svg.attr("height");
+        let width = svg.attr("width");
+        let x = d3.scaleTime()
+            .domain(d3.extent(times.map(d => d3.timeParse("%H")(d))))
+            .range([0, width-100]); //TODO fix scale range
+        let y = d3.scaleLinear()
+            .domain([0, d3.max(totalTraffic(filteredData.mv, times), d => d.quantity)])
+            .range([height-150, 0]); //TODO fix scale range
+        let valueLine = d3.line()
+            .x(d => (x(d.time)))
+            .y(d => (y(d.quantity)));
+
+        let bikeLine = group.select(".line.bike")
+            .data([totalTraffic(filteredData.bike, times)])
+            .transition()
+                .duration(300)
+                .ease(d3.easeLinear)
+            .attr("d", valueLine);
+        let mvLine = group.select(".line.mv")
+            .data([totalTraffic(filteredData.mv, times)])
+            .transition()
+                .duration(300)
+                .ease(d3.easeLinear)
+            .attr("d", valueLine);
     }
 });
 
