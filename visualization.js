@@ -185,11 +185,10 @@ $(function() {
             .style("position", 'absolute')
             .style("z-index", "10")
             .style("visibility", "hidden")
-            .style("background", "#eee")
-            .text("a simple tooltip");
+            .style("background", d3.rgb(220, 220, 220, .7));
 
         // create bar rectangles
-        groups.selectAll("rect")
+        groups.selectAll("rect.bar")
             .data(d => d)
             .enter()
                 .append("rect")
@@ -198,19 +197,22 @@ $(function() {
                     .attr("height", d => heightScale(d.percent))
                     .attr("width", () => 25)
                     .attr("class", d => `street-${formatStreetName(d.location)} lane-${d.type}`)
+                    .attr("stroke", "#000")
+                    .attr("stroke-width", "0px")
                     .style("fill", (d, i) => colorScale[i])
                     .on("mouseover", (d, i, nodes) => {
                         filterStreet = d.location;
                         updateLineChart();
-                        d3.select(nodes[i]).style("border", "1px solid #000");
+                        d3.selectAll(nodes).attr("stroke-width", "5px");
                         tooltip.text(hoverText(d, laneTypeNames));
                         return tooltip.style("visibility", "visible");
                     })
                     .on("mousemove", () =>
                         tooltip.style("top", (d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px")
                     )
-                    .on("mouseout", (d, i, data) => {
+                    .on("mouseout", (d, i, nodes) => {
                         tooltip.style("visibility", "hidden");
+                        d3.selectAll(nodes).attr("stroke-width", "0px");
                         filterStreet = null;
                         updateLineChart();
                     });
@@ -356,13 +358,16 @@ $(function() {
             .text("Traffic Level");
 
         // Add a title
-        group.append("text")
-            .attr("x", (width / 2))
-            .attr("y", 0 - (margin.top / 2))
-            .attr("text-anchor", "middle")
-            .style("font-size", "16px")
-            .style("text-decoration", "underline")
-            .text("Car and Bike Traffic Levels");
+        d3.select(".line-chart")
+            .append("g")
+            .attr("class", "title")
+                .append("text")
+                    .attr("x", (width / 2))
+                    .attr("y", (margin.top / 2))
+                    .attr("text-anchor", "middle")
+                    .style("font-size", "16px")
+                    .style("text-decoration", "underline")
+                    .text("Car and Bike Traffic Levels");
     }
 
     function updateLineChart() {
@@ -408,6 +413,10 @@ $(function() {
                 .duration(300)
                 .ease(d3.easeLinear)
                 .call(d3.axisLeft(y))
+
+        //update chart title
+        svg.select(".title text")
+            .text(`Car and Bike Traffic ${filterStreet ? `on ${filterStreet}` : ""}`);
     }
 });
 
