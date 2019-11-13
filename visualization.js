@@ -95,7 +95,7 @@ function hoverText(data, bikeLaneTypeNames) {
 
 /* document loaded */
 $(function() {
-    let filterStreet = null;
+    let filterStreet;
     let bikeLaneData, accidentData, trafficData;
 
     d3.csv("data/Street Segment Bike Lanes.csv")
@@ -239,9 +239,7 @@ $(function() {
             .style("text-decoration", "underline")
             .text("Bike Lanes for Boston Streets");
 
-        //Create Legend
-        // code referenced from https://bl.ocks.org/dianaow/0da76b59a7dffe24abcfa55d5b9e163e
-
+        // Create Legend
         // create g for legend to go into
         let radius = 6;
         let svgLegend = svg.append('g')
@@ -332,11 +330,12 @@ $(function() {
         // Add the X Axis
         group.append("g")
             .attr("transform", `translate(0,${height})`)
+            .attr("class", "x-axis")
             .call(d3.axisBottom(x));
 
         // Add the Y Axis
         group.append("g")
-            .attr("class", "x-axis")
+            .attr("class", "y-axis")
             .call(d3.axisLeft(y));
 
         // text label for the x axis
@@ -386,18 +385,29 @@ $(function() {
             .x(d => (x(d.time)))
             .y(d => (y(d.quantity)));
 
-        let bikeLine = group.select(".line.bike")
+        //update bike line
+        group.select(".line.bike")
             .data([totalTraffic(filteredData.bike, times)])
             .transition()
                 .duration(300)
                 .ease(d3.easeLinear)
-            .attr("d", valueLine);
-        let mvLine = group.select(".line.mv")
+                .attr("d", valueLine);
+
+        //update mv line
+        group.select(".line.mv")
             .data([totalTraffic(filteredData.mv, times)])
             .transition()
                 .duration(300)
                 .ease(d3.easeLinear)
-            .attr("d", valueLine);
+                .attr("d", valueLine);
+
+        //update y-axis
+        let yAxis = svg.select(".y-axis");
+        yAxis.merge(yAxis)
+            .transition()
+                .duration(300)
+                .ease(d3.easeLinear)
+                .call(d3.axisLeft(y))
     }
 });
 
