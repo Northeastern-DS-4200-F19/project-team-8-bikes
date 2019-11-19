@@ -71,13 +71,16 @@ function formatTrafficData(data, times) {
 }
 
 function totalTraffic(streets, times) {
+    let lastTime = times[times.length-1];
     let timeTotals = {};
     let keys;
     times.forEach((time, i) => timeTotals[i] = 0);
 
-    streets.forEach(street =>
-        timeTotals[street.time.getHours()] += Number(street.quantity)
-    );
+    streets.forEach(street => {
+        timeTotals[street.time.getHours()] += Number(street.quantity);
+        if(street.time.getHours()===0)
+            timeTotals[lastTime] += Number(street.quantity);
+    });
     keys = Object.keys(timeTotals);
 
     return keys.map(key => ({
@@ -87,6 +90,7 @@ function totalTraffic(streets, times) {
 }
 
 function averageTraffic(streets, times) {
+    let lastTime = times[times.length-1];
     let timeTotals = {};
     let streetCount = {};
     let keys;
@@ -98,6 +102,10 @@ function averageTraffic(streets, times) {
     streets.forEach(street => {
         timeTotals[street.time.getHours()] += Number(street.quantity);
         streetCount[street.time.getHours()]++;
+        if(street.time.getHours()===0) {
+            timeTotals[lastTime] += Number(street.quantity);
+            streetCount[lastTime]++;
+        }
     });
     keys = Object.keys(timeTotals);
 
@@ -424,13 +432,13 @@ $(function() {
         Object.keys(trafficData)
             .forEach(type => filteredData[type] = trafficData[type]
                 .filter(traffic => filterStreet===null || traffic.street===filterStreet));
-        let times = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23];
+        let times = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24];
         let height = svg.attr("height");
         let width = svg.attr("width");
 
         let x = d3.scaleTime()
             .domain(d3.extent(times.map(d => d3.timeParse("%H")(d))))
-            .range([0, width-100])
+            .range([0, width-100]);
         let y = d3.scaleLinear()
             .domain([0, d3.max(averageTraffic(filteredData.mv, times), d => d.quantity)])
             .range([height-140, 0]); //TODO fix scale range
