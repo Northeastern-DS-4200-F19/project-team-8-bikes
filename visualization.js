@@ -232,7 +232,7 @@ $(function() {
         let margin = {
                 top: 20,
                 right: 60,
-                bottom: 60,
+                bottom: 80,
                 left: 40
             },
             width = 600,
@@ -305,12 +305,13 @@ $(function() {
                 .append("g")
                 .attr("class", d => `bars street-${formatStreetName(d[0].location)}`);
 
-        let tooltip = d3.select("body")
-            .append("div")
-            .style("position", 'absolute')
-            .style("z-index", "10")
-            .style("visibility", "hidden")
-            .style("background", d3.rgb(220, 220, 220, .7));
+        let tooltip = svg.select("g.tooltip")
+            .append("g")
+
+                .style("position", 'absolute')
+                .style("z-index", "10")
+                .style("visibility", "hidden")
+                .style("background", d3.rgb(220, 220, 220, .7));
 
         // create bar rectangles
         groups.selectAll("rect.bar")
@@ -330,7 +331,8 @@ $(function() {
                         updateLineChart();
                         d3.selectAll(nodes).attr("stroke-width", "5px");
                         tooltip.text(hoverText(d, laneTypeNames));
-                        return tooltip.style("visibility", "visible");
+                        console.log(tooltip);
+                        tooltip.style("visibility", "visible");
                     })
                     .on("mousemove", () =>
                         tooltip
@@ -453,7 +455,7 @@ $(function() {
             .attr("y", y(totalTraffic(trafficData.bike, times)[0].quantity) - 20)
             .attr("width", 20)
             .attr("height", 20)
-            .attr("href", "/images/bike-icon.png");
+            .attr("href", "images/bike-icon.png");
 
         // Add the valueLine path for motor vehicles
         group.append("path")
@@ -471,7 +473,7 @@ $(function() {
             .attr("y", y(totalTraffic(trafficData.mv, times)[0].quantity) - 20)
             .attr("width", 20)
             .attr("height", 20)
-            .attr("href", "/images/car-icon.png");
+            .attr("href", "images/car-icon.png");
 
         // Add the X Axis
         group.append("g")
