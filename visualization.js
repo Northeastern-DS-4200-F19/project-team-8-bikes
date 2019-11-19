@@ -86,6 +86,27 @@ function totalTraffic(streets, times) {
     }))
 }
 
+function averageTraffic(streets, times) {
+    let timeTotals = {};
+    let streetCount = {};
+    let keys;
+    times.forEach((time, i) => {
+        timeTotals[i] = 0;
+        streetCount[i] = 0;
+    });
+
+    streets.forEach(street => {
+        timeTotals[street.time.getHours()] += Number(street.quantity);
+        streetCount[street.time.getHours()]++;
+    });
+    keys = Object.keys(timeTotals);
+
+    return keys.map(key => ({
+        time: d3.timeParse("%H")(key),
+        quantity: timeTotals[key]/streetCount[key],
+    }));
+}
+
 function hoverText(data, bikeLaneTypeNames) {
     let blType = "Bike Lane Type: " + bikeLaneTypeNames[data.type];
     //TODO add segments
@@ -113,7 +134,7 @@ $(function() {
 
         let margin = {
                 top: 20,
-                right: 40,
+                right: 60,
                 bottom: 60,
                 left: 40
             },
@@ -126,8 +147,8 @@ $(function() {
                 .attr("width", totalWidth)
                 .attr("height", totalHeight)
                 .attr("width", width)
-                .attr("height", height)
-        .append("g")
+                .attr("height", height);
+        svg.append("g")
             .attr("transform",
                 `translate(${margin.left},${margin.top})`);
 
@@ -151,7 +172,8 @@ $(function() {
         //y axis with labels
         let yAxis = d3.axisLeft()
             .scale(yScale)
-            .tickSize(-width);
+            .tickSize(-width)
+            .tickFormat(d => (d + "%"));
 
         //x axis with labels
         let xAxis = d3.axisBottom()
@@ -173,8 +195,8 @@ $(function() {
         d3.select("g.xAxis")
             .selectAll("text")
                 .style("text-anchor", "end")
-                .attr("dx", "-.8em")
-                .attr("dy", ".15em")
+                .attr("dx", "-.0em")
+                .attr("dy", "2.5em")
                 .attr("transform", "rotate(-65)");
 
         d3.select("g.xAxis").selectAll("g.tick").selectAll("line");
@@ -198,10 +220,10 @@ $(function() {
             .data(d => d)
             .enter()
                 .append("rect")
-                    .attr("x", d => xScale(d.x+1)-10)
-                    .attr("y", d => yScale(d.y)-heightScale(d.percent))
+                    .attr("x", d => xScale(d.x) + 8)
+                    .attr("y", d => yScale(d.y) - heightScale(d.percent))
                     .attr("height", d => heightScale(d.percent))
-                    .attr("width", () => 25)
+                    .attr("width", () => 40)
                     .attr("class", d => `street-${formatStreetName(d.location)} lane-${d.type}`)
                     .attr("stroke", "#000")
                     .attr("stroke-width", "0px")
@@ -254,7 +276,7 @@ $(function() {
         let radius = 6;
         let svgLegend = svg.append('g')
                     .attr('class', 'gLegend')
-                    .attr("transform", `translate(${width + margin.left + 30},0)`);
+                    .attr("transform", `translate(${width + margin.left + 30},${margin.top+40})`);
 
         // place legend on svg
         let legend = svgLegend.selectAll('.legend')
@@ -367,10 +389,10 @@ $(function() {
 
         // text label for the x axis
         group.append("text")             
-        .attr("transform",`translate(${width/2},${height + margin.top + 20})`)
-        .style("text-anchor", "middle")
-        .style("font-size", "13px")
-        .text("Time of Day");
+            .attr("transform",`translate(${width/2},${height + margin.top - 20})`)
+            .style("text-anchor", "middle")
+            .style("font-size", "13px")
+            .text("Time of Day");
 
         // text label for the y axis
         group.append("text")
@@ -405,19 +427,20 @@ $(function() {
         let times = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23];
         let height = svg.attr("height");
         let width = svg.attr("width");
+
         let x = d3.scaleTime()
             .domain(d3.extent(times.map(d => d3.timeParse("%H")(d))))
-            .range([0, width-100]); //TODO fix scale range
+            .range([0, width-100])
         let y = d3.scaleLinear()
-            .domain([0, d3.max(totalTraffic(filteredData.mv, times), d => d.quantity)])
-            .range([height-150, 0]); //TODO fix scale range
+            .domain([0, d3.max(averageTraffic(filteredData.mv, times), d => d.quantity)])
+            .range([height-140, 0]); //TODO fix scale range
         let valueLine = d3.line()
-            .x(d => (x(d.time)))
-            .y(d => (y(d.quantity)));
+            .x(d => x(d.time))
+            .y(d => y(d.quantity));
 
         //update bike line
         group.select(".line.bike")
-            .data([totalTraffic(filteredData.bike, times)])
+            .data([averageTraffic(filteredData.bike, times)])
             .transition()
                 .duration(300)
                 .ease(d3.easeLinear)
@@ -425,7 +448,7 @@ $(function() {
 
         //update mv line
         group.select(".line.mv")
-            .data([totalTraffic(filteredData.mv, times)])
+            .data([averageTraffic(filteredData.mv, times)])
             .transition()
                 .duration(300)
                 .ease(d3.easeLinear)
@@ -443,17 +466,17 @@ $(function() {
         d3.select(".icon.mv").transition()
             .duration(300)
             .ease(d3.easeLinear)
-            .attr("y", y(totalTraffic(filteredData.mv, times)[0].quantity) - 20);
+            .attr("y", y(averageTraffic(filteredData.mv, times)[0].quantity) - 20);
 
         //update bike icon
         d3.select(".icon.bike").transition()
             .duration(300)
             .ease(d3.easeLinear)
-            .attr("y", y(totalTraffic(filteredData.bike, times)[0].quantity) - 20);
+            .attr("y", y(averageTraffic(filteredData.bike, times)[0].quantity) - 20);
 
         //update chart title
         svg.select(".title text")
-            .text(`Car and Bike Vehicle Counts ${filterStreet ? `on ${filterStreet}` : ""}`);
+            .text("Car and Bike Vehicle Counts" + (filterStreet ? ` on ${filterStreet}` : ""));
     }
 });
 
