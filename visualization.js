@@ -104,7 +104,7 @@ $(function() {
     d3.csv("data/BikeMVCounts.csv").then(renderLineChart);
 
     function renderBarChart(bikeLanes, accidents) {
-        let streets = bikeLanes.map(d => d.location);
+        let streets = bikeLanes.map(d => d["Location"]);
         let headers = Object.keys(bikeLanes[0]);
         let bikeLaneTypes = headers.slice(2, 10);
         let lanes = formatBikeLaneData(bikeLanes, bikeLaneTypes);
@@ -113,8 +113,8 @@ $(function() {
 
         let margin = {
                 top: 20,
-                right: 20,
-                bottom: 40,
+                right: 40,
+                bottom: 60,
                 left: 40
             },
             width = 600,
@@ -156,7 +156,7 @@ $(function() {
         //x axis with labels
         let xAxis = d3.axisBottom()
             .scale(xScale)
-            .tickFormat((d) => d.location);
+            .tickFormat((d, i) => streets[i]);
 
         //add x and y axes to the svg
         svg.append("g")
@@ -169,7 +169,13 @@ $(function() {
             .call(xAxis)
             .attr("transform",`translate(0, ${totalHeight - margin.bottom})`);
 
-        d3.select("g.xAxis").selectAll("g.tick").selectAll("text");
+        //rotate x axis text
+        d3.select("g.xAxis")
+            .selectAll("text")
+                .style("text-anchor", "end")
+                .attr("dx", "-.8em")
+                .attr("dy", ".15em")
+                .attr("transform", "rotate(-65)");
 
         d3.select("g.xAxis").selectAll("g.tick").selectAll("line");
 
@@ -208,7 +214,9 @@ $(function() {
                         return tooltip.style("visibility", "visible");
                     })
                     .on("mousemove", () =>
-                        tooltip.style("top", (d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px")
+                        tooltip
+                            .style("top", `${d3.event.pageY-10} px`)
+                            .style("left",`${d3.event.pageX+10} px`)
                     )
                     .on("mouseout", (d, i, nodes) => {
                         tooltip.style("visibility", "hidden");
@@ -239,7 +247,7 @@ $(function() {
             .attr("text-anchor", "middle")
             .style("font-size", "24px")
             .style("text-decoration", "underline")
-            .text("Bike Lanes for Boston Streets");
+            .text("Bike Lanes on Boston Streets");
 
         // Create Legend
         // create g for legend to go into
@@ -285,20 +293,19 @@ $(function() {
         let parseTime = d3.timeParse("%I %p");
         let times = Object.keys(data[0]).filter(key => parseTime(key) != null);
         trafficData = formatTrafficData(data, times);
-        let traffic = formatTrafficData(data, times);
 
         // set the ranges
         let x = d3.scaleTime()
-            .domain(d3.extent(traffic.bike.map(d => d.time)))
+            .domain(d3.extent(trafficData.bike.map(d => d.time)))
             .range([0, width]);
         let y = d3.scaleLinear()
-            .domain([0, d3.max(totalTraffic(traffic.mv, times), d => d.quantity)])
+            .domain([0, d3.max(totalTraffic(trafficData.mv, times), d => d.quantity)])
             .range([height, 0]);
 
         // define the line
         let valueLine = d3.line()
-            .x(d => (x(d.time)))
-            .y(d => (y(d.quantity)));
+            .x(d => x(d.time))
+            .y(d => y(d.quantity));
 
         // append the svg object to the body of the page
         // appends a 'group' element to 'svg'
@@ -313,27 +320,45 @@ $(function() {
 
         // Add the valueLine path for bikes
         group.append("path")
-            .data([totalTraffic(traffic.bike, times)])
+            .data([totalTraffic(trafficData.bike, times)])
             .attr("class", "line bike")
             .attr("d", valueLine)
             .attr("fill", "none")
             .attr("data-legend", d => d.type)
             .attr("stroke", "#b35a2d");
 
+        //add bike icon
+        group.append("image")
+            .attr("class", "icon bike")
+            .attr("x", 5)
+            .attr("y", y(totalTraffic(trafficData.bike, times)[0].quantity) - 20)
+            .attr("width", 20)
+            .attr("height", 20)
+            .attr("href", "/images/bike-icon.png");
+
         // Add the valueLine path for motor vehicles
         group.append("path")
-            .data([totalTraffic(traffic.mv, times)])
+            .data([totalTraffic(trafficData.mv, times)])
             .attr("class", "line mv")
             .attr("d", valueLine)
             .attr("fill", "none")
             .attr("data-legend", () => "Motor Vehicles")
             .attr("stroke", "#346d94");
 
+        //add mv icon
+        group.append("image")
+            .attr("class", "icon mv")
+            .attr("x", 5)
+            .attr("y", y(totalTraffic(trafficData.mv, times)[0].quantity) - 20)
+            .attr("width", 20)
+            .attr("height", 20)
+            .attr("href", "/images/car-icon.png");
+
         // Add the X Axis
         group.append("g")
             .attr("transform", `translate(0,${height})`)
             .attr("class", "x-axis")
-            .call(d3.axisBottom(x));
+            .call(d3.axisBottom(x).tickFormat(d3.timeFormat("%I %p")));
 
         // Add the Y Axis
         group.append("g")
@@ -355,7 +380,7 @@ $(function() {
             .attr("dy", "1em")
             .style("text-anchor", "middle")
             .style("font-size", "13px")
-            .text("Traffic Level");
+            .text("Vehicle Count");
 
         // Add a title
         d3.select(".line-chart")
@@ -367,7 +392,7 @@ $(function() {
                     .attr("text-anchor", "middle")
                     .style("font-size", "16px")
                     .style("text-decoration", "underline")
-                    .text("Car and Bike Traffic Levels");
+                    .text("Car and Bike Vehicle Counts");
     }
 
     function updateLineChart() {
@@ -412,11 +437,23 @@ $(function() {
             .transition()
                 .duration(300)
                 .ease(d3.easeLinear)
-                .call(d3.axisLeft(y))
+                .call(d3.axisLeft(y));
+
+        //update mv icon
+        d3.select(".icon.mv").transition()
+            .duration(300)
+            .ease(d3.easeLinear)
+            .attr("y", y(totalTraffic(filteredData.mv, times)[0].quantity) - 20);
+
+        //update bike icon
+        d3.select(".icon.bike").transition()
+            .duration(300)
+            .ease(d3.easeLinear)
+            .attr("y", y(totalTraffic(filteredData.bike, times)[0].quantity) - 20);
 
         //update chart title
         svg.select(".title text")
-            .text(`Car and Bike Traffic ${filterStreet ? `on ${filterStreet}` : ""}`);
+            .text(`Car and Bike Vehicle Counts ${filterStreet ? `on ${filterStreet}` : ""}`);
     }
 });
 
