@@ -5,12 +5,12 @@ const formatStreetName = street => street.toLowerCase().replace(/\s/g, '-');
 const laneTypeNames = {
     BL: "Bike Lane",
     BFBL: "Buffered Bike Lane",
-    SBL: "Separated bike lane",
-    SLM: "Shared lane markings",
-    PSL: "Priority shared lane markings",
-    CL: "Climbing lane/hybrid",
-    BSBL: "Bus/bike lane",
-    SBLBL: "Separated bike lane on one side, bike lane on the opposite side",
+    SBL: "Separated Bike Lane",
+    SLM: "Shared Lane",
+    PSL: "Priority Shared Lane",
+    CL: "Climbing Lane/Hybrid",
+    BSBL: "Bus/Bike Lane",
+    SBLBL: "Shared Bike Lane/Bike Lane",
 };
 
 //const asNumber = item => item==="n/a" ? 0 : Number(item);
@@ -232,19 +232,17 @@ $(function() {
         let margin = {
                 top: 20,
                 right: 60,
-                bottom: 80,
+                bottom: 180,
                 left: 40
             },
-            width = 600,
-            height = 480,
+            width = 550,
+            height = 440,
             totalHeight = height + margin.top + margin.bottom,
             totalWidth = width + margin.left + margin.right;
 
         let svg = d3.select("#vis-svg")
                 .attr("width", totalWidth)
                 .attr("height", totalHeight)
-                .attr("width", width)
-                .attr("height", height)
         .append("g")
             .attr("transform",
                 `translate(${margin.left},${margin.top})`);
@@ -348,7 +346,7 @@ $(function() {
 
         // text label for the x axis
         svg.append("text")
-        .attr("transform",`translate(${width/2},${height + margin.top + 20})`)
+        .attr("transform",`translate(${width/2},${height + margin.top + 125})`)
         .style("text-anchor", "middle")
         .text("Streets");
 
@@ -375,7 +373,7 @@ $(function() {
         let radius = 6;
         let svgLegend = svg.append('g')
                     .attr('class', 'gLegend')
-                    .attr("transform", `translate(${width + margin.left + 30},${margin.top+40})`);
+                    .attr("transform", `translate(${width + margin.left + 10},${margin.top+40})`);
 
         // place legend on svg
         let legend = svgLegend.selectAll('.legend')
