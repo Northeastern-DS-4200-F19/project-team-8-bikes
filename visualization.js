@@ -1,6 +1,6 @@
 /* before document loads */
 // converts to lowercase & replaces spaces with '-'
-const formatStreetName = street => street.toLowerCase().replace(/\s/g, '-');
+const formatStreetNameAsClass = street => street.toLowerCase().replace(/\s/g, '-');
 
 const laneTypeNames = {
     BL: "Bike Lane",
@@ -12,8 +12,6 @@ const laneTypeNames = {
     BSBL: "Bus/Bike Lane",
     SBLBL: "Shared Bike Lane/Bike Lane",
 };
-
-//const asNumber = item => item==="n/a" ? 0 : Number(item);
 
 const removeSection = streetName => {
     let temp = streetName.split(" ");
@@ -49,6 +47,7 @@ function formatAccidentData(data) {
     return data;
 }
 
+// splits traffic data into car and bike
 function formatTrafficData(data, times) {
     let newData = {
         bike: [],
@@ -61,7 +60,7 @@ function formatTrafficData(data, times) {
                 let list = street["Vehicle Type"]==="Bike" ? newData.bike : newData.mv;
                 list.push({
                     time: d3.timeParse("%I %p")(time),
-                    quantity: street[time],
+                    quantity: Number(street[time]),
                     location: street["Location"],
                     type: street["Vehicle Type"],
                     street: removeSection(street["Location"])
@@ -83,7 +82,7 @@ function averageTraffic(streets, times) {
     });
 
     streets.forEach(street => {
-        timeTotals[street.time.getHours()] += Number(street.quantity);
+        timeTotals[street.time.getHours()] += street.quantity;
         streetCount[street.time.getHours()]++;
     });
     keys = Object.keys(timeTotals);
@@ -99,6 +98,7 @@ function maxTraffic(trafficTimes) {
     return d3.max(trafficTimes, d => d.quantity);
 }
 
+// hover text for bar graph
 function hoverText(data, bikeLaneTypeNames) {
     let blType = "Bike Lane Type: " + bikeLaneTypeNames[data.type];
     //TODO add segments
@@ -258,11 +258,10 @@ $(function() {
             .data(lanes)
             .enter()
                 .append("g")
-                .attr("class", d => `bars street-${formatStreetName(d[0].location)}`);
+                .attr("class", d => `bars street-${formatStreetNameAsClass(d[0].location)}`);
 
         let tooltip = svg.select("g.tooltip")
             .append("g")
-
                 .style("position", 'absolute')
                 .style("z-index", "10")
                 .style("visibility", "hidden")
@@ -277,7 +276,7 @@ $(function() {
                     .attr("y", d => yScale(d.y) - heightScale(d.percent))
                     .attr("height", d => heightScale(d.percent))
                     .attr("width", () => 40)
-                    .attr("class", d => `street-${formatStreetName(d.location)} lane-${d.type}`)
+                    .attr("class", d => `street-${formatStreetNameAsClass(d.location)} lane-${d.type}`)
                     .attr("stroke", "#000")
                     .attr("stroke-width", "0px")
                     .style("fill", (d, i) => colorScale[i])
@@ -317,11 +316,10 @@ $(function() {
 
         // Add a title
         svg.append("text")
-            .attr("x", chart.width / 2)
-            .attr("y", -20)
+            .attr("x", chart.totalWidth / 2)
+            .attr("y", -margin.top/2)
             .attr("text-anchor", "middle")
             .style("font-size", "24px")
-            .style("text-decoration", "underline")
             .text("Bike Lanes on Boston Streets");
 
         // Create Legend
@@ -484,10 +482,10 @@ $(function() {
                     .attr("y", (margin.top / 2))
                     .attr("text-anchor", "middle")
                     .style("font-size", "16px")
-                    .style("text-decoration", "underline")
                     .text("Average Car and Bike Vehicle Counts");
     }
 
+    // when a bar is hovered over, update view of line chart
     function updateLineChart() {
         let svg = d3.select(".line-chart");
         let group = svg.select("g");
