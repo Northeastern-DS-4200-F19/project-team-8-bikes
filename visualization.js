@@ -43,8 +43,10 @@ function formatBikeLaneData(data, bikeLaneTypes) {
     return newData;
 }
 
+// formats the data so that numbers are parsed a numbers
 function formatAccidentData(data) {
-
+    data.forEach(d => d["Total"] = Number(d["Total"]));
+    return data;
 }
 
 function formatTrafficData(data, times) {
@@ -107,96 +109,16 @@ function hoverText(data, bikeLaneTypeNames) {
 /* document loaded */
 $(function() {
     let filterStreet;
-    let bikeLaneData, trafficData;
+    let bikeLaneData, trafficData, accidentData;
 
     d3.csv("data/Street Segment Bike Lanes.csv").then(renderBarChart);
     d3.csv("data/BikeMVCounts.csv").then(renderLineChart);
     d3.csv("data/Accidents Bike Lanes.csv").then(renderAccidentBarChart);
 
-    function renderAccidentBarChart(accidentData) {
-          /*console.log("Creating Accident Bar Chart");
+    function renderAccidentBarChart(data) {
+        let formattedData = formatAccidentData(data);
+        accidentData = formattedData;
 
-          let margin = {
-            top:20,
-            right: 40,
-            bottom: 60,
-            left: 40
-          },
-          width = 600,
-          height = 480,
-          totalHeight = height + margin.top + margin.bottom,
-          totalWidth = width + margin.left + margin.right;
-
-
-          console.log(margin.width);
-          let dataset = [80, 100, 56, 120, 180, 150, 140, 120, 160,90,77];
-          let barPadding = 5;
-          let barWidth = (500 / dataset.length);
-          let streets = ['Huntington Ave','Mass Ave','Columbus Ave','Harvard Ave','5','6','7','8','9','10','11']
-          console.log(streets);
-
-          let svg = d3.select("#accident-svg")
-                      .attr("width", width)
-                      .attr("height", height)
-                      .attr("class", "accident-chart")
-                      .append("g")
-                          .attr("transform",
-                              `translate(${margin.left},${margin.top})`);
-
-            let xScale = d3.scaleLinear()
-                          .domain([0, dataset.length])
-                          .range([margin.left, width + margin.left]);
-
-
-             let yScale = d3.scaleLinear()
-                            .domain([0, 100])
-                            .range([height + margin.top, margin.top]);
-
-
-          let barChart = svg.selectAll("rect")
-                            .data(dataset)
-                            .enter()
-                            .append("rect")
-                            .attr("x", d => xScale(d.x+1)-10)
-                            .attr("y", function(d) {
-                          return 500 - d;
-                        })
-                            .attr("height", function(d) {
-                          return d;
-                        })
-                            .attr("width", barWidth - barPadding)
-                            .attr("transform", function (d, i) {
-                              let translate = [barWidth * i, 0];
-                          return "translate("+ translate +")";
-                    });
-
-                    //y axis with labels
-                    let yAxis = d3.axisLeft()
-                        .scale(yScale)
-                        .tickSize(-width);
-
-                    //x axis with labels
-                    let xAxis = d3.axisBottom()
-                        .scale(xScale)
-                        .tickFormat((d, i) => streets[i]);
-
-                    //add x and y axes to the svg
-                    svg.append("g")
-                        .attr("class", "yAxis")
-                        .call(yAxis)
-                        .attr("transform",`translate(${margin.left}, 0)`);
-
-                    svg.append("g")
-                        .attr("class", "xAxis")
-                        .call(xAxis)
-                        .attr("transform",`translate(0, ${totalHeight - margin.bottom})`);
-
-
-
-                        svg.append("text")
-                        .attr("transform",`translate(${width/2},${height + margin.top + 20})`)
-                        .style("text-anchor", "middle")
-                        .text("Streets for Accidents");*/
         let svg = d3.select(".vis-holder").append("svg")
                 .attr("class", "accident-chart"),
             margin = {
@@ -205,24 +127,26 @@ $(function() {
                 bottom: 30,
                 left: 50
             },
-            width = /*+svg.attr("width")*/400 - margin.left - margin.right,
-            height = /*+svg.attr("height")*/400 - margin.top - margin.bottom,
+            width = 600,
+            height = 400,
+            totalWidth = width + margin.left + margin.right,
+            totalHeight = height + margin.top + margin.bottom,
             g = svg.append("g")
                 .attr("transform", `translate(${margin.left},${margin.top})`);
 
-        svg.attr("width", width)
-            .attr("height", height);
+        svg.attr("width", totalWidth)
+            .attr("height", totalHeight);
 
         //let parseTime = d3.timeParse("%d-%b-%y");
 
         let x = d3.scaleBand()
-            .rangeRound([0, width])
-            .domain(accidentData.map(d => d["Location"]))
+            .range([0, width])
+            .domain(formattedData.map(d => d["Location"]))
             .padding(0.1);
 
         let y = d3.scaleLinear()
             .rangeRound([height, 0])
-            .domain([0, d3.max(accidentData, d => Number(d["Total"]))]);
+            .domain([0, d3.max(formattedData, d => d["Total"])]);
 
         // add x axis
         g.append("g")
@@ -242,13 +166,13 @@ $(function() {
 
         // add bars for data
         g.selectAll(".bar")
-            .data(accidentData)
+            .data(formattedData)
             .enter().append("rect")
                 .attr("class", "bar")
                 .attr("x", d => x(d["Location"]))
-                .attr("y", d => y(Number(d["Total"])))
+                .attr("y", d => y(d["Total"]))
                 .attr("width", x.bandwidth())
-                .attr("height", d => height - y(Number(d["Total"])));
+                .attr("height", d => height - y(d["Total"]));
     }
     
     function renderBarChart(bikeLanes) {
