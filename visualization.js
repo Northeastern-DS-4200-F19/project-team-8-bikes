@@ -100,10 +100,9 @@ function maxTraffic(trafficTimes) {
 
 // hover text for bar graph
 function hoverText(data, bikeLaneTypeNames) {
-    let blType = "Bike Lane Type: " + bikeLaneTypeNames[data.type];
     //TODO add segments
     //let stSegments = "Street Segments: ";
-    return blType;
+    return "Bike Lane Type: " + bikeLaneTypeNames[data.type];
 }
 
 /* document loaded */
@@ -175,12 +174,12 @@ $(function() {
                 .attr("height", d => height - y(d["Total"]));
     }
     
-    function renderBarChart(bikeLanes) {
-        let streets = bikeLanes.map(d => d["Location"]);
-        let headers = Object.keys(bikeLanes[0]);
+    function renderBarChart(data) {
+        let streets = data.map(d => d["Location"]);
+        let headers = Object.keys(data[0]);
         let bikeLaneTypes = headers.slice(2, 10);
-        let lanes = formatBikeLaneData(bikeLanes, bikeLaneTypes);
-        bikeLaneData = formatBikeLaneData(bikeLanes, bikeLaneTypes);
+        let lanes = formatBikeLaneData(data, bikeLaneTypes);
+        bikeLaneData = formatBikeLaneData(data, bikeLaneTypes);
 
         let margin = {
                 top: 20,
@@ -205,7 +204,7 @@ $(function() {
                 `translate(${margin.left},${margin.top})`);
 
         let xScale = d3.scaleLinear()
-            .domain([0, bikeLanes.length])
+            .domain([0, data.length])
             .range([margin.left, chart.rightEdge]);
 
         // yScale is not inverted on the yScale
@@ -251,53 +250,57 @@ $(function() {
                 .attr("dy", "2.5em")
                 .attr("transform", "rotate(-65)");
 
-        d3.select("g.xAxis").selectAll("g.tick").selectAll("line");
+        let tooltip = svg.select("g.tooltip")
+            .append("g")
+            .style("position", 'absolute')
+            .style("z-index", "10")
+            .style("visibility", "hidden")
+            .style("background", d3.rgb(220, 220, 220, .7));
 
         // Create groups for each series, rects for each segment
         let groups = svg.selectAll("g.bars")
             .data(lanes)
-            .enter()
-                .append("g")
+            .enter().append("g")
                 .attr("class", d => `bars street-${formatStreetNameAsClass(d[0].location)}`);
 
-        let tooltip = svg.select("g.tooltip")
-            .append("g")
-                .style("position", 'absolute')
-                .style("z-index", "10")
-                .style("visibility", "hidden")
-                .style("background", d3.rgb(220, 220, 220, .7));
-
-        // create bar rectangles
+        // add bar sections
         groups.selectAll("rect.bar")
             .data(d => d)
-            .enter()
-                .append("rect")
-                    .attr("x", d => xScale(d.x) + 8)
-                    .attr("y", d => yScale(d.y) - heightScale(d.percent))
-                    .attr("height", d => heightScale(d.percent))
-                    .attr("width", () => 40)
-                    .attr("class", d => `street-${formatStreetNameAsClass(d.location)} lane-${d.type}`)
-                    .attr("stroke", "#000")
-                    .attr("stroke-width", "0px")
-                    .style("fill", (d, i) => colorScale[i])
-                    .on("mouseover", (d, i, nodes) => {
-                        filterStreet = d.location;
-                        updateLineChart();
-                        d3.selectAll(nodes).attr("stroke-width", "5px");
-                        tooltip.text(hoverText(d, laneTypeNames));
-                        tooltip.style("visibility", "visible");
-                    })
-                    .on("mousemove", () =>
-                        tooltip
-                            .style("top", `${d3.event.pageY-10} px`)
-                            .style("left",`${d3.event.pageX+10} px`)
-                    )
-                    .on("mouseout", (d, i, nodes) => {
-                        tooltip.style("visibility", "hidden");
-                        d3.selectAll(nodes).attr("stroke-width", "0px");
-                        filterStreet = null;
-                        updateLineChart();
-                    });
+            .enter().append("rect")
+                .attr("class", d => `street-${formatStreetNameAsClass(d.location)} lane-${d.type}`)
+                .attr("x", d => xScale(d.x) + 8)
+                .attr("y", d => yScale(d.y) - heightScale(d.percent))
+                .attr("height", d => heightScale(d.percent))
+                .attr("width", 40)
+                .style("fill", (d, i) => colorScale[i])
+
+        // add full height bars
+        groups.append("rect")
+            .attr("class", d => `bars street-${formatStreetNameAsClass(d[0].location)}`)
+            .attr("x", d => xScale(d[0].x) + 8)
+            .attr("y", margin.top)
+            .attr("height", chart.height)
+            .attr("width", 40)
+            .attr("stroke", "#000")
+            .attr("stroke-width", "0px")
+            .attr("fill", d3.rgb(0, 0, 0, 0))
+            .on("mouseover", (d, i, nodes) => {
+                d3.select(nodes[i]).attr("stroke-width", "5px");
+                filterStreet = d[0].location;
+                updateLineChart();
+                tooltip.text(hoverText(d[0], laneTypeNames));
+                tooltip.style("visibility", "visible");
+            })
+            .on("mousemove", () =>
+                tooltip.style("top", `${d3.event.pageY-10} px`)
+                    .style("left",`${d3.event.pageX+10} px`)
+            )
+            .on("mouseout", (d, i, nodes) => {
+                d3.select(nodes[i]).attr("stroke-width", "0px");
+                filterStreet = null;
+                updateLineChart();
+                tooltip.style("visibility", "hidden");
+            });
 
         // text label for the x axis
         svg.append("text")
@@ -322,37 +325,43 @@ $(function() {
             .style("font-size", "24px")
             .text("Bike Lanes on Boston Streets");
 
-        // Create Legend
-        // create g for legend to go into
-        let radius = 6;
-        let svgLegend = svg.append('g')
-                    .attr('class', 'gLegend')
-                    .attr("transform", `translate(${chart.rightEdge + 10},${margin.top+40})`);
+        function addLegend() {
+            // Create Legend
+            // create g for legend to go into
+            let radius = 6;
+            let svgLegend = svg.append('g')
+                .attr('class', 'gLegend')
+                .attr("transform", `translate(${chart.rightEdge + 10},${margin.top+40})`);
 
-        // place legend on svg
-        let legend = svgLegend.selectAll('.legend')
-               .data(bikeLaneTypes)
-               .enter().append('g')
-                 .attr("class", "legend")
-                 .attr("transform", (d, i) => `translate(0,${i*20})`);
+            // place legend on svg
+            let legend = svgLegend.selectAll('.legend')
+                .data(bikeLaneTypes)
+                .enter().append('g')
+                .attr("class", "legend")
+                .attr("transform", (d, i) => `translate(0,${i*20})`);
 
-        // add color circles to legend
-        legend.append("circle")
-            .attr("class", "legend-node")
-            .attr("cx", 0)
-            .attr("cy", 0)
-            .attr("r", radius)
-            .style("fill", (d, i) => colorScale[i]);
+            // add color circles to legend
+            legend.append("circle")
+                .attr("class", "legend-node")
+                .attr("cx", 0)
+                .attr("cy", 0)
+                .attr("r", radius)
+                .style("fill", (d, i) => colorScale[i]);
 
-        // add text to legend
-        legend.append("text")
-            .attr("class", "legend-text")
-            .attr("x", radius*2)
-            .attr("y", radius/2)
-            .style("fill", "#272727")
-            .style("font-size", 12)
-            .text(d=>laneTypeNames[d]);
+            // add text to legend
+            legend.append("text")
+                .attr("class", "legend-text")
+                .attr("x", radius*2)
+                .attr("y", radius/2)
+                .style("fill", "#272727")
+                .style("font-size", 12)
+                .text(d=>laneTypeNames[d]);
+        }
+
+        addLegend();
     }
+
+
 
     function renderLineChart(data) {
         let margin = {
