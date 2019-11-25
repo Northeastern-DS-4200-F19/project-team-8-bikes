@@ -95,7 +95,7 @@ function averageTraffic(streets, times) {
 
 // returns the maximum of the provided list of objects with the key "quantity"
 function maxTraffic(trafficTimes) {
-    return d3.max(trafficTimes, d => d.quantity);
+    return d3.max(trafficTimes, d => d.quantity) - 1400;
 }
 
 // hover text for bar graph
@@ -246,6 +246,7 @@ $(function() {
         d3.select("g.xAxis")
             .selectAll("text")
                 .style("text-anchor", "end")
+                .style("font-size", "12px")
                 .attr("dx", "-.0em")
                 .attr("dy", "2.5em")
                 .attr("transform", "rotate(-65)");
@@ -381,8 +382,11 @@ $(function() {
             .domain(d3.extent(trafficData.bike.map(d => d.time)))
             .range([0, width]);
         let y = d3.scaleLinear()
-            .domain([0, maxTraffic(averageTraffic(trafficData.mv, times), d => d.quantity)])
-            .range([height, 0]);
+            .domain([0, maxTraffic(trafficData.mv)])
+            .range([height, 0])
+            console.log(trafficData.mv)
+            console.log(times)
+            console.log(averageTraffic(trafficData.mv, times));
 
         // define the line
         let valueLine = d3.line()
@@ -510,7 +514,7 @@ $(function() {
             .domain(d3.extent(times.map(d => d3.timeParse("%H")(d))))
             .range([0, width-100]);
         let y = d3.scaleLinear()
-            .domain([0, maxTraffic(averageTraffic(trafficData.mv, times))])
+            .domain([0, maxTraffic(trafficData.mv)])
             .range([height-140, 0]);
         let valueLine = d3.line()
             .x(d => x(d.time))
