@@ -104,7 +104,7 @@ function hoverText(data, bikeLaneTypeNames) {
     //let stSegments = "Street Segments: ";
     console.log(data)
     console.log(bikeLaneTypeNames)
-    // + "<br/>" + 'sdfsk' 
+    // + "<br/>" + 'sdfsk'
     return "Bike Lane Type: " + bikeLaneTypeNames[data.type];
 }
 
@@ -389,7 +389,7 @@ $(function() {
                                             .style("position", "absolute")
                                             .style("z-index", "10")
                                             .style("visibility", "hidden")
-                                            .text("Separated Bike Lane")
+                                            .text("Separated Bike Lane: An exclusive lane for bicycle travel that is physically separated from motor vehicle traffic via flexposts, on-street parking, and/or raised curbs.")
                                             .style('background',colorScale[2]);
 
                           var legend3tooltip = d3.select("body")
@@ -397,7 +397,7 @@ $(function() {
                                             .style("position", "absolute")
                                             .style("z-index", "10")
                                             .style("visibility", "hidden")
-                                            .text("Shared Lane:")
+                                            .text("Shared Lane: A lane with shared lane markings indicating that bicycles and motor vehicles must share a travel lane.")
                                             .style('background',colorScale[3]);
 
                           var legend4tooltip = d3.select("body")
@@ -405,7 +405,7 @@ $(function() {
                                             .style("position", "absolute")
                                             .style("z-index", "10")
                                             .style("visibility", "hidden")
-                                            .text("Priority Shared Lane")
+                                            .text("Priority Shared Lane: A lane with shared lane markings that are supplemented with dashed longitudinal lines and/or colored pavement to indicate bicycle priority.")
                                             .style('background',colorScale[4]);
 
                           var legend5tooltip = d3.select("body")
@@ -413,7 +413,7 @@ $(function() {
                                               .style("position", "absolute")
                                               .style("z-index", "10")
                                               .style("visibility", "hidden")
-                                              .text("Climbing Lane/Hybrid")
+                                              .text("Climbing Lane/Hybrid: A two-way street with a bike lane in one direction and a shared lane in the opposite direction.")
                                               .style('background',colorScale[5]);
 
                           var legend6tooltip = d3.select("body")
@@ -421,15 +421,15 @@ $(function() {
                                               .style("position", "absolute")
                                               .style("z-index", "10")
                                               .style("visibility", "hidden")
-                                              .text("Bus/Bike Lane")
-                                              .style('background',colorScale[6]);
+                                              .text("Bus/Bike Lane: A lane for shared bus and bicycle travel. Motor vehicles are prohibited except where signed.")
+                                              .style('background','#8B4513');
 
                           var legend7tooltip = d3.select("body")
                                               .append("div")
                                               .style("position", "absolute")
                                               .style("z-index", "10")
                                               .style("visibility", "hidden")
-                                              .text("Shared Bike Lane/BikeLane")
+                                              .text("Shared Bike Lane/BikeLane: A street designed for slow speeds with a single surface shared by all users.")
                                               .style('background',colorScale[7]);
 
 
