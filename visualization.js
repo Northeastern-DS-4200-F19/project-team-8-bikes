@@ -214,7 +214,7 @@ $(function() {
             .style("position", 'absolute')
             .style("z-index", "10")
             .style("visibility", "hidden")
-            .style("background", d3.rgb(220, 220, 220, 1));
+            .style("background", d3.rgb(176, 196, 222, 1));
 
         // Create groups for each series, rects for each segment
         let groups = svg.selectAll("g.bars")
@@ -364,6 +364,8 @@ $(function() {
         legendTooltips.forEach((d, i) =>
             d.style("position", "absolute")
                 .style("z-index", "10")
+                .style("width", "400px")
+                .style("height","100px")
                 .style("visibility", "hidden")
                 .style('background', colorScale[i])
                 .text(`${Object.keys(legendHoverText)[i]}: ${legendHoverText[Object.keys(legendHoverText)[i]]}`)
