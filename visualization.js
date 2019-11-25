@@ -42,9 +42,28 @@ function formatBikeLaneData(data, bikeLaneTypes) {
 }
 
 // formats the data so that numbers are parsed a numbers
-function formatAccidentData(data) {
-    data.forEach(d => d["Total"] = Number(d["Total"]));
-    return data;
+function formatCrashData(data) {
+    let bikeLaneTypes = Object.keys(laneTypeNames);
+    let newData = [];
+
+    data.forEach((d, i) => {
+        let bikeLanes = [];
+        bikeLaneTypes.forEach((bl, j) =>
+            bikeLanes.push({
+                location: d["Location"],
+                neighborhood: d["Neighborhood"],
+                type: bl,
+                segments: d["Segments"],
+                crashes: Number(d[bl]),
+                streetTotal: Number(d["Total"]),
+                x: i,
+                y: j>0 ? Number(bikeLanes[j-1].y) + bikeLanes[j-1].crashes : 0,
+            })
+        );
+        newData.push(bikeLanes);
+    });
+
+    return newData;
 }
 
 // splits traffic data into car and bike
@@ -109,70 +128,12 @@ function hoverText(data, bikeLaneTypeNames) {
 $(function() {
     let filterStreet;
     let bikeLaneData, trafficData, accidentData;
+    // colors for bike lane types
+    const colorScale = ["#fcd88a", "#cf7c1c", "#93c464", "#75734F", "#5eafc6", "#41a368", "#412000", "#41eae4"];
 
     d3.csv("data/Street Segment Bike Lanes.csv").then(renderBarChart);
     d3.csv("data/BikeMVCounts.csv").then(renderLineChart);
-    d3.csv("data/Accidents Bike Lanes.csv").then(renderAccidentBarChart);
-
-    function renderAccidentBarChart(data) {
-        let formattedData = formatAccidentData(data);
-        accidentData = formattedData;
-
-        let svg = d3.select(".vis-holder").append("svg")
-                .attr("class", "accident-chart"),
-            margin = {
-                top: 20,
-                right: 20,
-                bottom: 30,
-                left: 50
-            },
-            width = 600,
-            height = 400,
-            totalWidth = width + margin.left + margin.right,
-            totalHeight = height + margin.top + margin.bottom,
-            g = svg.append("g")
-                .attr("transform", `translate(${margin.left},${margin.top})`);
-
-        svg.attr("width", totalWidth)
-            .attr("height", totalHeight);
-
-        //let parseTime = d3.timeParse("%d-%b-%y");
-
-        let x = d3.scaleBand()
-            .range([0, width])
-            .domain(formattedData.map(d => d["Location"]))
-            .padding(0.1);
-
-        let y = d3.scaleLinear()
-            .rangeRound([height, 0])
-            .domain([0, d3.max(formattedData, d => d["Total"])]);
-
-        // add x axis
-        g.append("g")
-            .attr("transform", `translate(0,${height})`)
-            .call(d3.axisBottom(x));
-
-        // add y axis
-        g.append("g")
-            .call(d3.axisLeft(y))
-            .append("text")
-            .attr("fill", "#000")
-            .attr("transform", "rotate(-90)")
-            .attr("y", 6)
-            .attr("dy", "0.71em")
-            .attr("text-anchor", "end")
-            .text("Number of Accidents");
-
-        // add bars for data
-        g.selectAll(".bar")
-            .data(formattedData)
-            .enter().append("rect")
-                .attr("class", "bar")
-                .attr("x", d => x(d["Location"]))
-                .attr("y", d => y(d["Total"]))
-                .attr("width", x.bandwidth())
-                .attr("height", d => height - y(d["Total"]));
-    }
+    d3.csv("data/Accidents Bike Lanes.csv").then(renderCrashBarChart);
 
     function renderBarChart(data) {
         let streets = data.map(d => d["Location"]);
@@ -200,8 +161,7 @@ $(function() {
                 .attr("width", chart.totalWidth)
                 .attr("height", chart.totalHeight)
         .append("g")
-            .attr("transform",
-                `translate(${margin.left},${margin.top})`);
+            .attr("transform", `translate(${margin.left},${margin.top})`);
 
         let xScale = d3.scaleLinear()
             .domain([0, data.length])
@@ -216,9 +176,6 @@ $(function() {
         let heightScale = d3.scaleLinear()
             .domain([0, 100])
             .range([0, chart.height]);
-
-        // colors for bike lane types
-        let colorScale = ["#fcd88a", "#cf7c1c", "#93c464", "#75734F", "#5eafc6", "#41a368", "#412000", "#41eae4"];
 
         //y axis with labels
         let yAxis = d3.axisLeft()
@@ -273,7 +230,7 @@ $(function() {
                 .attr("y", d => yScale(d.y) - heightScale(d.percent))
                 .attr("height", d => heightScale(d.percent))
                 .attr("width", 40)
-                .style("fill", (d, i) => colorScale[i])
+                .style("fill", (d, i) => colorScale[i]);
 
         // add full height bars
         groups.append("rect")
@@ -293,8 +250,8 @@ $(function() {
                 tooltip.style("visibility", "visible");
             })
             .on("mousemove", () =>
-                tooltip.style("top", `${d3.event.pageY-10} px`)
-                    .style("left",`${d3.event.pageX+10} px`)
+                tooltip.style("top", `${d3.event.pageY-10}px`)
+                    .style("left",`${d3.event.pageX+10}px`)
             )
             .on("mouseout", (d, i, nodes) => {
                 d3.select(nodes[i]).attr("stroke-width", "0px");
@@ -305,7 +262,7 @@ $(function() {
 
         // text label for the x axis
         svg.append("text")
-        .attr("transform",`translate(${chart.width/2},${chart.bottomEdge + 125})`)
+        .attr("transform",`translate(${chart.width/2},${chart.bottomEdge+125})`)
         .style("text-anchor", "middle")
         .text("Streets");
 
@@ -313,14 +270,14 @@ $(function() {
         svg.append("text")
             .attr("transform", "rotate(-90)")
             .attr("y", -margin.left)
-            .attr("x",0 - (chart.height / 2))
+            .attr("x",-chart.height/2)
             .attr("dy", "1em")
             .style("text-anchor", "middle")
             .text("Percentage of Street");
 
         // Add a title
         svg.append("text")
-            .attr("x", chart.totalWidth / 2)
+            .attr("x", chart.totalWidth/2)
             .attr("y", -margin.top/2)
             .attr("text-anchor", "middle")
             .style("font-size", "24px")
@@ -341,7 +298,7 @@ $(function() {
                 .attr("class", "legend")
                 .attr("transform", (d, i) => `translate(0,${i*20})`)
                 //assigned id
-                .attr("id", function(d,i){ return "legend" + i});
+                .attr("id", (d, i) => `legend${i}`);
 
             // add color circles to legend
             legend.append("circle")
@@ -358,109 +315,71 @@ $(function() {
                 .attr("y", radius/2)
                 .style("fill", "#272727")
                 .style("font-size", 12)
-                .text(d=>laneTypeNames[d])
-
+                .text(d => laneTypeNames[d]);
         }
 
         addLegend();
 
-                          var legend0tooltip = d3.select("body")
-                                            .append("div")
-                                            .style("position", "absolute")
-                                            .style("z-index", "10")
-                                            .style("visibility", "hidden")
-                                            .text("Bike Lane: An exclusive lane for bicycle travel.")
-                                            .style('background',colorScale[0])
+        /*let hovers = d3.selectAll(".gLegend .legend").each((d, i, list) => {
+            let item = list[i];
+            // d: lane type abbreviation
+            // console.log(legendHoverText[laneTypeNames[d]]);
+            d3.select("body").append("div")
+                .attr("class", "legend-hover-text")
+                .attr("id", `legend-hover-${i}`)
+                .text("HASDYFSDF")
+                .style("position", "absolute")
+                .style("z-index", "10")
+                .style("visibility", "hidden")
+                .style('background', colorScale[i])
+        });
 
+        d3.selectAll(".gLegend .legend")
+            .on("mouseover", (d, i) =>
+                hovers[i].style("visibility", "visible"))
+            .on("mousemove", (d, i) =>
+                hovers[i].style("top", `${d3.event.pageY-10}px`).style("left",`${d3.event.pageX+10}px`))
+            .on("mouseout", (d, i) =>
+                hovers[i].style("visibility", "hidden"))
+            .on("click", function () {
+                console.log("Selecting legend")
+            });*/
 
-                          var legend1tooltip = d3.select("body")
-                                            .append("div")
-                                            .style("position", "absolute")
-                                            .style("z-index", "10")
-                                            .style("visibility", "hidden")
-                                            .text("Buffered Bike Lane: An exclusive lane for bicycle travel with a striped buffer zone adjacent to a vehicle travel lane or parking lane.")
-                                            .style('background',colorScale[1]);
+        let legendHoverText = {
+            "Bike Lane": "An exclusive lane for bicycle travel.",
+            "Buffered Bike Lane": "An exclusive lane for bicycle travel with a striped buffer " +
+                "zone adjacent to a vehicle travel lane or parking lane.",
+            "Separated Bike Lane": "tbd",
+            "Shared Lane": "tbd",
+            "Priority Shared Lane": "tbd",
+            "Climbing Lane/Hybrid": "tbd",
+            "Bus/Bike Lane": "tbd",
+            "Shared Bike Lane/BikeLane": "tbd",
+        };
 
-                          var legend2tooltip = d3.select("body")
-                                            .append("div")
-                                            .style("position", "absolute")
-                                            .style("z-index", "10")
-                                            .style("visibility", "hidden")
-                                            .text("Separated Bike Lane")
-                                            .style('background',colorScale[2]);
+        let body = d3.select("body");
+        let legendTooltips = [body.append("div"), body.append("div"), body.append("div"), body.append("div"),
+            body.append("div"), body.append("div"), body.append("div"), body.append("div")];
 
-                          var legend3tooltip = d3.select("body")
-                                            .append("div")
-                                            .style("position", "absolute")
-                                            .style("z-index", "10")
-                                            .style("visibility", "hidden")
-                                            .text("Shared Lane:")
-                                            .style('background',colorScale[3]);
+        legendTooltips.forEach((d, i) =>
+            d.style("position", "absolute")
+                .style("z-index", "10")
+                .style("visibility", "hidden")
+                .style('background', colorScale[i])
+                .text(`${Object.keys(legendHoverText)[i]}: ${legendHoverText[Object.keys(legendHoverText)[i]]}`)
+        );
 
-                          var legend4tooltip = d3.select("body")
-                                            .append("div")
-                                            .style("position", "absolute")
-                                            .style("z-index", "10")
-                                            .style("visibility", "hidden")
-                                            .text("Priority Shared Lane")
-                                            .style('background',colorScale[4]);
-
-                          var legend5tooltip = d3.select("body")
-                                              .append("div")
-                                              .style("position", "absolute")
-                                              .style("z-index", "10")
-                                              .style("visibility", "hidden")
-                                              .text("Climbing Lane/Hybrid")
-                                              .style('background',colorScale[5]);
-
-                          var legend6tooltip = d3.select("body")
-                                              .append("div")
-                                              .style("position", "absolute")
-                                              .style("z-index", "10")
-                                              .style("visibility", "hidden")
-                                              .text("Bus/Bike Lane")
-                                              .style('background',colorScale[6]);
-
-                          var legend7tooltip = d3.select("body")
-                                              .append("div")
-                                              .style("position", "absolute")
-                                              .style("z-index", "10")
-                                              .style("visibility", "hidden")
-                                              .text("Shared Bike Lane/BikeLane")
-                                              .style('background',colorScale[7]);
-
-
-                          var legend0 = d3.select("#legend0");
-                          var legend1 = d3.select("#legend1");
-                          var legend2 = d3.select("#legend2");
-                          var legend3 = d3.select("#legend3");
-                          var legend4 = d3.select("#legend4");
-                          var legend5 = d3.select("#legend5");
-                          var legend6 = d3.select("#legend6");
-                          var legend7 = d3.select("#legend7");
-
-                          var legends = [legend0,legend1,legend2,legend3,legend4,legend5,legend6,legend7]
-                          var legendtooltips = [legend0tooltip,legend1tooltip,legend2tooltip,legend3tooltip,legend4tooltip,legend5tooltip,legend6tooltip,legend7tooltip]
-
-
-
-
-        function legendmouse(item,index) {
-        item
-        .on("mouseover", function(){return legendtooltips[index].style("visibility", "visible")})
-        .on("mousemove", function(){return legendtooltips[index].style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px")})
-        .on("mouseout", function(){return legendtooltips[index].style("visibility", "hidden")});
-
-      }
-
-      legends.forEach(legendmouse);
-
-      //  legend1.on("click", function () {
-      //  console.log("Selecting legend")
-        //  });
+        d3.selectAll(".gLegend .legend")
+            .on("mouseover", (d, i) =>
+                legendTooltips[i].style("visibility", "visible"))
+            .on("mousemove", (d, i) =>
+                legendTooltips[i].style("top", `${d3.event.pageY-10}px`).style("left",`${d3.event.pageX+10}px`))
+            .on("mouseout", (d, i) =>
+                legendTooltips[i].style("visibility", "hidden"))
+            .on("click", function () {
+                console.log("Selecting legend")
+            });
     }
-
-
 
     function renderLineChart(data) {
         let margin = {
@@ -481,10 +400,7 @@ $(function() {
             .range([0, width]);
         let y = d3.scaleLinear()
             .domain([0, maxTraffic(trafficData.mv)])
-            .range([height, 0])
-            console.log(trafficData.mv)
-            console.log(times)
-            console.log(averageTraffic(trafficData.mv, times));
+            .range([height, 0]);
 
         // define the line
         let valueLine = d3.line()
@@ -594,6 +510,82 @@ $(function() {
                     .attr("text-anchor", "middle")
                     .style("font-size", "16px")
                     .text("Average Car and Bike Vehicle Counts");
+    }
+
+    function renderCrashBarChart(data) {
+        let formattedData = formatCrashData(data);
+        accidentData = formattedData;
+
+        let svg = d3.select(".vis-holder").append("svg")
+                .attr("class", "crash-chart"),
+            margin = {
+                top: 20,
+                right: 20,
+                bottom: 100,
+                left: 50
+            },
+            width = 440,
+            height = 300,
+            totalWidth = width + margin.left + margin.right,
+            totalHeight = height + margin.top + margin.bottom,
+            g = svg.append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+            let max = 24;
+
+        svg.attr("width", totalWidth)
+            .attr("height", totalHeight);
+
+        let x = d3.scaleLinear()
+            .domain([0, formattedData.length])
+            .range([0, width]);
+
+        let y = d3.scaleLinear()
+            .domain([0, max])
+            .rangeRound([height, 0]);
+
+        // heightscale where the y is inverted
+        let heightScale = d3.scaleLinear()
+            .domain([0, max])
+            .range([0, height]);
+
+        // add x axis
+        let xAxis = g.append("g")
+            .attr("transform", `translate(0,${height})`)
+            .call(d3.axisBottom(x));
+
+        // add y axis
+        g.append("g")
+            .call(d3.axisLeft(y))
+            .append("text")
+            .attr("fill", "#000")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 6)
+            .attr("dy", "0.71em")
+            .attr("text-anchor", "end")
+            .text("Number of Accidents");
+
+        let groups = g.selectAll(".bar")
+            .data(formattedData)
+            .enter().append("g")
+                .attr("class", "bar");
+
+        groups.selectAll("rect.bar")
+            .data(d => d)
+            .enter().append("rect")
+                .attr("class", d => d.type)
+                .attr("x", d => x(d.x))
+                .attr("y", d => y(d.y) - heightScale(d.crashes))
+                .attr("height", d => heightScale(d.crashes))
+                .attr("width", 40)
+                .style("fill", (d, i) => colorScale[i]);
+
+        //rotate text
+        xAxis.selectAll("text")
+            .style("text-anchor", "end")
+            .style("font-size", "12px")
+            .attr("dx", "-.08em")
+            .attr("dy", "2.5em")
+            .attr("transform", "rotate(-65)");
     }
 
     // when a bar is hovered over, update view of line chart
