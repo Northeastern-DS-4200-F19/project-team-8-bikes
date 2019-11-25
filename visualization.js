@@ -129,7 +129,7 @@ $(function() {
     let filterStreet;
     let bikeLaneData, trafficData, accidentData;
     // colors for bike lane types
-    const colorScale = ["#fcd88a", "#cf7c1c", "#93c464", "#75734F", "#5eafc6", "#41a368", "#412000", "#41eae4"];
+    const colorScale = ["#fcd88a", "#cf7c1c", "#93c464", "#75734F", "#5eafc6", "#41a368", "#708dd4", "#73bfbf"];
 
     d3.csv("data/Street Segment Bike Lanes.csv").then(renderBarChart);
     d3.csv("data/BikeMVCounts.csv").then(renderLineChart);
@@ -176,9 +176,6 @@ $(function() {
         let heightScale = d3.scaleLinear()
             .domain([0, 100])
             .range([0, chart.height]);
-
-        // colors for bike lane types
-        let colorScale = ["#fcd88a", "#cf7c1c", "#93c464", "#75734F", "#5eafc6", "#41a368", "#412000", "#41eae4"];
 
         //y axis with labels
         let yAxis = d3.axisLeft()
