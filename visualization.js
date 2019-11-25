@@ -102,6 +102,9 @@ function maxTraffic(trafficTimes) {
 function hoverText(data, bikeLaneTypeNames) {
     //TODO add segments
     //let stSegments = "Street Segments: ";
+    console.log(data)
+    console.log(bikeLaneTypeNames)
+    // + "<br/>" + 'sdfsk' 
     return "Bike Lane Type: " + bikeLaneTypeNames[data.type];
 }
 
@@ -251,12 +254,13 @@ $(function() {
                 .attr("dy", "2.5em")
                 .attr("transform", "rotate(-65)");
 
-        let tooltip = svg.select("g.tooltip")
-            .append("g")
+        let tooltip = d3.select('body')
+            .append("div")
+            .classed('tooltip',true)
             .style("position", 'absolute')
             .style("z-index", "10")
             .style("visibility", "hidden")
-            .style("background", d3.rgb(220, 220, 220, .7));
+            .style("background", d3.rgb(220, 220, 220, 1));
 
         // Create groups for each series, rects for each segment
         let groups = svg.selectAll("g.bars")
@@ -289,13 +293,12 @@ $(function() {
                 d3.select(nodes[i]).attr("stroke-width", "5px");
                 filterStreet = d[0].location;
                 updateLineChart();
-                tooltip.text(hoverText(d[0], laneTypeNames));
+                tooltip.html(hoverText(d[0], laneTypeNames));
                 tooltip.style("visibility", "visible");
             })
-            .on("mousemove", () =>
-                tooltip.style("top", `${d3.event.pageY-10} px`)
-                    .style("left",`${d3.event.pageX+10} px`)
-            )
+            .on("mousemove", () => {
+                tooltip.style("top", (d3.event.pageY-10) + "px").style("left",(d3.event.pageX + 10) + "px")
+            })
             .on("mouseout", (d, i, nodes) => {
                 d3.select(nodes[i]).attr("stroke-width", "0px");
                 filterStreet = null;
