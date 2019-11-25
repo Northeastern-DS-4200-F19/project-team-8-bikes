@@ -586,7 +586,7 @@ $(function() {
             .append("g")
             .attr("class", "title")
                 .append("text")
-                    .attr("x", (width / 2))
+                    .attr("x", ((width + margin.left + margin.right + 30) / 2))
                     .attr("y", (margin.top / 2))
                     .attr("text-anchor", "middle")
                     .style("font-size", "16px")
