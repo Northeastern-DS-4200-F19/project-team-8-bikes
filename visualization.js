@@ -121,7 +121,7 @@ function maxTraffic(trafficTimes) {
 function hoverText(data, bikeLaneTypeNames) {
     //TODO add segments
     //let stSegments = "Street Segments: ";
-    return "Bike Lane Type: " + bikeLaneTypeNames[data.type];
+    return "Bike Lane Type: " + bikeLaneTypeNames[data.type] + "<br/> Percent: " + data.percent + "%" + "<br/> Neighborhood: " + data.neighborhood;
 }
 
 /* document loaded */
@@ -225,17 +225,6 @@ $(function() {
             .enter().append("g")
                 .attr("class", d => `bars street-${formatStreetNameAsClass(d[0].location)}`);
 
-        // add bar sections
-        groups.selectAll("rect.bar")
-            .data(d => d)
-            .enter().append("rect")
-                .attr("class", d => `street-${formatStreetNameAsClass(d.location)} lane-${d.type}`)
-                .attr("x", d => xScale(d.x) + 8)
-                .attr("y", d => yScale(d.y) - heightScale(d.percent))
-                .attr("height", d => heightScale(d.percent))
-                .attr("width", 40)
-                .style("fill", (d, i) => colorScale[i]);
-
         // add full height bars
         groups.append("rect")
             .attr("class", d => `bars street-${formatStreetNameAsClass(d[0].location)}`)
@@ -245,23 +234,34 @@ $(function() {
             .attr("width", 40)
             .attr("stroke", "#000")
             .attr("stroke-width", "0px")
-            .attr("fill", d3.rgb(0, 0, 0, 0))
-            .on("mouseover", (d, i, nodes) => {
-                d3.select(nodes[i]).attr("stroke-width", "5px");
-                filterStreet = d[0].location;
-                updateLineChart();
-                tooltip.html(hoverText(d[0], laneTypeNames));
-                tooltip.style("visibility", "visible");
-            })
-            .on("mousemove", () => {
-                tooltip.style("top", (d3.event.pageY-10) + "px").style("left",(d3.event.pageX + 10) + "px")
-            })
-            .on("mouseout", (d, i, nodes) => {
-                d3.select(nodes[i]).attr("stroke-width", "0px");
-                filterStreet = null;
-                updateLineChart();
-                tooltip.style("visibility", "hidden");
-            });
+            .attr("fill", d3.rgb(0, 0, 0, 0));
+
+        // add bar sections
+        groups.selectAll("rect.bar")
+            .data(d => d)
+            .enter().append("rect")
+                .attr("class", d => `street-${formatStreetNameAsClass(d.location)} lane-${d.type}`)
+                .attr("x", d => xScale(d.x) + 8)
+                .attr("y", d => yScale(d.y) - heightScale(d.percent))
+                .attr("height", d => heightScale(d.percent))
+                .attr("width", 40)
+                .style("fill", (d, i) => colorScale[i])
+                .on("mouseover", (d, i, nodes) => {
+                    d3.select("rect.bars.street-" + formatStreetNameAsClass(d.location)).attr("stroke-width", "10px");
+                    filterStreet = d.location;
+                    updateLineChart();
+                    tooltip.html(hoverText(d, laneTypeNames));
+                    tooltip.style("visibility", "visible");
+                })
+                .on("mousemove", () => {
+                    tooltip.style("top", (d3.event.pageY-10) + "px").style("left",(d3.event.pageX + 10) + "px")
+                })
+                .on("mouseout", (d, i, nodes) => {
+                    d3.select("rect.bars.street-" + formatStreetNameAsClass(d.location)).attr("stroke-width", "0px");
+                    filterStreet = null;
+                    updateLineChart();
+                    tooltip.style("visibility", "hidden");
+                });
 
         // text label for the x axis
         svg.append("text")
@@ -508,7 +508,7 @@ $(function() {
             .append("g")
             .attr("class", "title")
                 .append("text")
-                    .attr("x", (width / 2))
+                    .attr("x", ((width + margin.left + margin.right + 30) / 2))
                     .attr("y", (margin.top / 2))
                     .attr("text-anchor", "middle")
                     .style("font-size", "16px")
