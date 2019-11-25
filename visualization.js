@@ -102,10 +102,7 @@ function maxTraffic(trafficTimes) {
 function hoverText(data, bikeLaneTypeNames) {
     //TODO add segments
     //let stSegments = "Street Segments: ";
-    console.log(data)
-    console.log(bikeLaneTypeNames)
-    // + "<br/>" + 'sdfsk' 
-    return "Bike Lane Type: " + bikeLaneTypeNames[data.type];
+    return "Bike Lane Type: " + bikeLaneTypeNames[data.type] + "<br/> Percent: " + data.percent + "%" + "<br/> Neighborhood: " + data.neighborhood;
 }
 
 /* document loaded */
@@ -267,6 +264,17 @@ $(function() {
             .data(lanes)
             .enter().append("g")
                 .attr("class", d => `bars street-${formatStreetNameAsClass(d[0].location)}`);
+        
+        // add full height bars
+        groups.append("rect")
+            .attr("class", d => `bars street-${formatStreetNameAsClass(d[0].location)}`)
+            .attr("x", d => xScale(d[0].x) + 8)
+            .attr("y", margin.top)
+            .attr("height", chart.height)
+            .attr("width", 40)
+            .attr("stroke", "#000")
+            .attr("stroke-width", "0px")
+            .attr("fill", d3.rgb(0, 0, 0, 0));
 
         // add bar sections
         groups.selectAll("rect.bar")
@@ -278,33 +286,22 @@ $(function() {
                 .attr("height", d => heightScale(d.percent))
                 .attr("width", 40)
                 .style("fill", (d, i) => colorScale[i])
-
-        // add full height bars
-        groups.append("rect")
-            .attr("class", d => `bars street-${formatStreetNameAsClass(d[0].location)}`)
-            .attr("x", d => xScale(d[0].x) + 8)
-            .attr("y", margin.top)
-            .attr("height", chart.height)
-            .attr("width", 40)
-            .attr("stroke", "#000")
-            .attr("stroke-width", "0px")
-            .attr("fill", d3.rgb(0, 0, 0, 0))
-            .on("mouseover", (d, i, nodes) => {
-                d3.select(nodes[i]).attr("stroke-width", "5px");
-                filterStreet = d[0].location;
-                updateLineChart();
-                tooltip.html(hoverText(d[0], laneTypeNames));
-                tooltip.style("visibility", "visible");
-            })
-            .on("mousemove", () => {
-                tooltip.style("top", (d3.event.pageY-10) + "px").style("left",(d3.event.pageX + 10) + "px")
-            })
-            .on("mouseout", (d, i, nodes) => {
-                d3.select(nodes[i]).attr("stroke-width", "0px");
-                filterStreet = null;
-                updateLineChart();
-                tooltip.style("visibility", "hidden");
-            });
+                .on("mouseover", (d, i, nodes) => {
+                    d3.select("rect.bars.street-" + formatStreetNameAsClass(d.location)).attr("stroke-width", "10px");
+                    filterStreet = d.location;
+                    updateLineChart();
+                    tooltip.html(hoverText(d, laneTypeNames));
+                    tooltip.style("visibility", "visible");
+                })
+                .on("mousemove", () => {
+                    tooltip.style("top", (d3.event.pageY-10) + "px").style("left",(d3.event.pageX + 10) + "px")
+                })
+                .on("mouseout", (d, i, nodes) => {
+                    d3.select("rect.bars.street-" + formatStreetNameAsClass(d.location)).attr("stroke-width", "0px");
+                    filterStreet = null;
+                    updateLineChart();
+                    tooltip.style("visibility", "hidden");
+                });
 
         // text label for the x axis
         svg.append("text")
@@ -484,10 +481,7 @@ $(function() {
             .range([0, width]);
         let y = d3.scaleLinear()
             .domain([0, maxTraffic(trafficData.mv)])
-            .range([height, 0])
-            console.log(trafficData.mv)
-            console.log(times)
-            console.log(averageTraffic(trafficData.mv, times));
+            .range([height, 0]);
 
         // define the line
         let valueLine = d3.line()
