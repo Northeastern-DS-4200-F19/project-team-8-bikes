@@ -173,7 +173,7 @@ $(function() {
                 .attr("width", x.bandwidth())
                 .attr("height", d => height - y(d["Total"]));
     }
-    
+
     function renderBarChart(data) {
         let streets = data.map(d => d["Location"]);
         let headers = Object.keys(data[0]);
@@ -339,7 +339,9 @@ $(function() {
                 .data(bikeLaneTypes)
                 .enter().append('g')
                 .attr("class", "legend")
-                .attr("transform", (d, i) => `translate(0,${i*20})`);
+                .attr("transform", (d, i) => `translate(0,${i*20})`)
+                //assigned id
+                .attr("id", function(d,i){ return "legend" + i});
 
             // add color circles to legend
             legend.append("circle")
@@ -356,10 +358,106 @@ $(function() {
                 .attr("y", radius/2)
                 .style("fill", "#272727")
                 .style("font-size", 12)
-                .text(d=>laneTypeNames[d]);
+                .text(d=>laneTypeNames[d])
+
         }
 
         addLegend();
+
+                          var legend0tooltip = d3.select("body")
+                                            .append("div")
+                                            .style("position", "absolute")
+                                            .style("z-index", "10")
+                                            .style("visibility", "hidden")
+                                            .text("Bike Lane: An exclusive lane for bicycle travel.")
+                                            .style('background',colorScale[0])
+
+
+                          var legend1tooltip = d3.select("body")
+                                            .append("div")
+                                            .style("position", "absolute")
+                                            .style("z-index", "10")
+                                            .style("visibility", "hidden")
+                                            .text("Buffered Bike Lane: An exclusive lane for bicycle travel with a striped buffer zone adjacent to a vehicle travel lane or parking lane.")
+                                            .style('background',colorScale[1]);
+
+                          var legend2tooltip = d3.select("body")
+                                            .append("div")
+                                            .style("position", "absolute")
+                                            .style("z-index", "10")
+                                            .style("visibility", "hidden")
+                                            .text("Separated Bike Lane")
+                                            .style('background',colorScale[2]);
+
+                          var legend3tooltip = d3.select("body")
+                                            .append("div")
+                                            .style("position", "absolute")
+                                            .style("z-index", "10")
+                                            .style("visibility", "hidden")
+                                            .text("Shared Lane:")
+                                            .style('background',colorScale[3]);
+
+                          var legend4tooltip = d3.select("body")
+                                            .append("div")
+                                            .style("position", "absolute")
+                                            .style("z-index", "10")
+                                            .style("visibility", "hidden")
+                                            .text("Priority Shared Lane")
+                                            .style('background',colorScale[4]);
+
+                          var legend5tooltip = d3.select("body")
+                                              .append("div")
+                                              .style("position", "absolute")
+                                              .style("z-index", "10")
+                                              .style("visibility", "hidden")
+                                              .text("Climbing Lane/Hybrid")
+                                              .style('background',colorScale[5]);
+
+                          var legend6tooltip = d3.select("body")
+                                              .append("div")
+                                              .style("position", "absolute")
+                                              .style("z-index", "10")
+                                              .style("visibility", "hidden")
+                                              .text("Bus/Bike Lane")
+                                              .style('background',colorScale[6]);
+
+                          var legend7tooltip = d3.select("body")
+                                              .append("div")
+                                              .style("position", "absolute")
+                                              .style("z-index", "10")
+                                              .style("visibility", "hidden")
+                                              .text("Shared Bike Lane/BikeLane")
+                                              .style('background',colorScale[7]);
+
+
+                          var legend0 = d3.select("#legend0");
+                          var legend1 = d3.select("#legend1");
+                          var legend2 = d3.select("#legend2");
+                          var legend3 = d3.select("#legend3");
+                          var legend4 = d3.select("#legend4");
+                          var legend5 = d3.select("#legend5");
+                          var legend6 = d3.select("#legend6");
+                          var legend7 = d3.select("#legend7");
+
+                          var legends = [legend0,legend1,legend2,legend3,legend4,legend5,legend6,legend7]
+                          var legendtooltips = [legend0tooltip,legend1tooltip,legend2tooltip,legend3tooltip,legend4tooltip,legend5tooltip,legend6tooltip,legend7tooltip]
+
+
+
+
+        function legendmouse(item,index) {
+        item
+        .on("mouseover", function(){return legendtooltips[index].style("visibility", "visible")})
+        .on("mousemove", function(){return legendtooltips[index].style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px")})
+        .on("mouseout", function(){return legendtooltips[index].style("visibility", "hidden")});
+
+      }
+
+      legends.forEach(legendmouse);
+
+      //  legend1.on("click", function () {
+      //  console.log("Selecting legend")
+        //  });
     }
 
 
