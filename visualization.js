@@ -356,12 +356,12 @@ $(function() {
             "Bike Lane": "An exclusive lane for bicycle travel.",
             "Buffered Bike Lane": "An exclusive lane for bicycle travel with a striped buffer " +
                 "zone adjacent to a vehicle travel lane or parking lane.",
-            "Separated Bike Lane": "tbd",
-            "Shared Lane": "tbd",
-            "Priority Shared Lane": "tbd",
-            "Climbing Lane/Hybrid": "tbd",
-            "Bus/Bike Lane": "tbd",
-            "Shared Bike Lane/BikeLane": "tbd",
+            "Separated Bike Lane": "An exclusive lane for bicycle travel that is physically separated from motor vehicle traffic via flexposts, on-street parking, and/or raised curbs.",
+            "Shared Lane": "A lane with shared lane markings indicating that bicycles and motor vehicles must share a travel lane.",
+            "Priority Shared Lane": "A lane with shared lane markings that are supplemented with dashed longitudinal lines and/or colored pavement to indicate bicycle priority.",
+            "Climbing Lane/Hybrid": "A two-way street with a bike lane in one direction and a shared lane in the opposite direction.",
+            "Bus/Bike Lane": "A lane for shared bus and bicycle travel. Motor vehicles are prohibited except where signed.",
+            "Shared Bike Lane/BikeLane": "A street designed for slow speeds with a single surface shared by all users.",
         };
 
         let body = d3.select("body");
@@ -372,7 +372,7 @@ $(function() {
             d.style("position", "absolute")
                 .style("z-index", "10")
                 .style("width", "400px")
-                .style("height","100px")
+                .style("height","110px")
                 .style("visibility", "hidden")
                 .style('background', colorScale[i])
                 .text(`${Object.keys(legendHoverText)[i]}: ${legendHoverText[Object.keys(legendHoverText)[i]]}`)
@@ -572,7 +572,7 @@ $(function() {
             .attr("dy", "0.71em")
             .attr("text-anchor", "end")
             .text("Number of Accidents");
-        
+
         // Add a title
         svg.append("text")
             .attr("x", width/2)
@@ -585,7 +585,7 @@ $(function() {
             .data(formattedData)
             .enter().append("g")
                 .attr("class", "bar");
-        
+
         let tooltip = d3.select('body')
             .append("div")
             .classed('tooltip',true)
