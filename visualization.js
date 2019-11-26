@@ -124,6 +124,13 @@ function hoverText(data, bikeLaneTypeNames) {
     return "Bike Lane Type: " + bikeLaneTypeNames[data.type] + "<br/> Percent: " + data.percent + "%" + "<br/> Neighborhood: " + data.neighborhood;
 }
 
+// hover text for accident graph
+function crashHoverText(data, bikeLaneTypeNames) {
+    //TODO add segments
+    //let stSegments = "Street Segments: ";
+    return "Bike Lane Type: " + bikeLaneTypeNames[data.type] + "<br/> Accidents: " + data.crashes + "<br/> Neighborhood: " + data.neighborhood;
+}
+
 /* document loaded */
 $(function() {
     let filterStreet;
@@ -521,7 +528,7 @@ $(function() {
         let svg = d3.select(".vis-holder").append("svg")
                 .attr("class", "crash-chart"),
             margin = {
-                top: 20,
+                top: 100,
                 right: 20,
                 bottom: 100,
                 left: 50
@@ -565,21 +572,70 @@ $(function() {
             .attr("dy", "0.71em")
             .attr("text-anchor", "end")
             .text("Number of Accidents");
+        
+        // Add a title
+        svg.append("text")
+            .attr("x", width/2)
+            .attr("y", -margin.top/2)
+            .attr("text-anchor", "middle")
+            .style("font-size", "24px")
+            .text("Bike Accidents on Boston Streets");
 
         let groups = g.selectAll(".bar")
             .data(formattedData)
             .enter().append("g")
                 .attr("class", "bar");
+        
+        let tooltip = d3.select('body')
+            .append("div")
+            .classed('tooltip',true)
+            .style("position", 'absolute')
+            .style("z-index", "10")
+            .style("visibility", "hidden")
+            .style("background", d3.rgb(176, 196, 222, 1));
+
+        /*
+        // add full height bars
+        groups.selectAll("rect.bar")
+            .data(d => console.log(d) + d)
+            .enter().append("rect")
+                .attr("class", d => d.type)
+                .attr("x", d => x(d.x))
+                .attr("y", margin.top)
+                .attr("height", height)
+                .attr("width", 40)
+                .attr("stroke", "#000")
+                .attr("stroke-width", "0px")
+                .attr("fill", d3.rgb(0, 0, 0, 0));
+        */
 
         groups.selectAll("rect.bar")
             .data(d => d)
             .enter().append("rect")
                 .attr("class", d => d.type)
-                .attr("x", d => x(d.x))
+                .attr("x", d => x(d.x) + 3)
                 .attr("y", d => y(d.y) - heightScale(d.crashes))
                 .attr("height", d => heightScale(d.crashes))
-                .attr("width", 40)
-                .style("fill", (d, i) => colorScale[i]);
+                .attr("width", 33)
+                .style("fill", (d, i) => colorScale[i])
+                .on("mouseover", (d, i, nodes) => {
+                    d3.select("rect.bars.street-" + formatStreetNameAsClass(d.location)).attr("stroke-width", "10px");
+                    d3.select("rect." + d.type).attr("stroke-width", "10px");
+                    filterStreet = d.location;
+                    updateLineChart();
+                    tooltip.html(crashHoverText(d, laneTypeNames));
+                    tooltip.style("visibility", "visible");
+                })
+                .on("mousemove", () => {
+                    tooltip.style("top", (d3.event.pageY-10) + "px").style("left",(d3.event.pageX + 10) + "px")
+                })
+                .on("mouseout", (d, i, nodes) => {
+                    d3.select("rect.bars.street-" + formatStreetNameAsClass(d.location)).attr("stroke-width", "0px");
+                    d3.select("rect." + d.type).attr("stroke-width", "0px");
+                    filterStreet = null;
+                    updateLineChart();
+                    tooltip.style("visibility", "hidden");
+                });
 
         //rotate text
         xAxis.selectAll("text")
