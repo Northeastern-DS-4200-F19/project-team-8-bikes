@@ -13,6 +13,18 @@ const laneTypeNames = {
     SBLBL: "Shared Bike Lane/Bike Lane",
 };
 
+let legendHoverText = {
+    "Bike Lane": "An exclusive lane for bicycle travel.",
+    "Buffered Bike Lane": "An exclusive lane for bicycle travel with a striped buffer " +
+        "zone adjacent to a vehicle travel lane or parking lane.",
+    "Separated Bike Lane": "An exclusive lane for bicycle travel that is physically separated from motor vehicle traffic via flexposts, on-street parking, and/or raised curbs.",
+    "Shared Lane": "A lane with shared lane markings indicating that bicycles and motor vehicles must share a travel lane.",
+    "Priority Shared Lane": "A lane with shared lane markings that are supplemented with dashed longitudinal lines and/or colored pavement to indicate bicycle priority.",
+    "Climbing Lane/Hybrid": "A two-way street with a bike lane in one direction and a shared lane in the opposite direction.",
+    "Bus/Bike Lane": "A lane for shared bus and bicycle travel. Motor vehicles are prohibited except where signed.",
+    "Shared Bike Lane/BikeLane": "A street designed for slow speeds with a single surface shared by all users.",
+};
+
 const removeSection = streetName => {
     let temp = streetName.split(" ");
     return temp.slice(0, temp.indexOf("of")-1).join(" ");
@@ -352,18 +364,6 @@ $(function() {
                 console.log("Selecting legend")
             });*/
 
-        let legendHoverText = {
-            "Bike Lane": "An exclusive lane for bicycle travel.",
-            "Buffered Bike Lane": "An exclusive lane for bicycle travel with a striped buffer " +
-                "zone adjacent to a vehicle travel lane or parking lane.",
-            "Separated Bike Lane": "An exclusive lane for bicycle travel that is physically separated from motor vehicle traffic via flexposts, on-street parking, and/or raised curbs.",
-            "Shared Lane": "A lane with shared lane markings indicating that bicycles and motor vehicles must share a travel lane.",
-            "Priority Shared Lane": "A lane with shared lane markings that are supplemented with dashed longitudinal lines and/or colored pavement to indicate bicycle priority.",
-            "Climbing Lane/Hybrid": "A two-way street with a bike lane in one direction and a shared lane in the opposite direction.",
-            "Bus/Bike Lane": "A lane for shared bus and bicycle travel. Motor vehicles are prohibited except where signed.",
-            "Shared Bike Lane/BikeLane": "A street designed for slow speeds with a single surface shared by all users.",
-        };
-
         let body = d3.select("body");
         let legendTooltips = [body.append("div"), body.append("div"), body.append("div"), body.append("div"),
             body.append("div"), body.append("div"), body.append("div"), body.append("div")];
@@ -419,8 +419,7 @@ $(function() {
         // append the svg object to the body of the page
         // appends a 'group' element to 'svg'
         // moves the 'group' element to the top left margin
-        let group = d3.select(".vis-holder")
-            .append("svg")
+        let group = d3.select(".line-chart")
                 .attr("width", width + margin.left + margin.right)
                 .attr("height", height + margin.top + margin.bottom)
                 .attr("class", "line-chart")
@@ -524,65 +523,78 @@ $(function() {
     function renderCrashBarChart(data) {
         let formattedData = formatCrashData(data);
         accidentData = formattedData;
+        let streets = data.map(d => d["Location"]);
+        let margin = {
+            top: 40,
+            right: 60,
+            bottom: 180,
+            left: 65
+        },
+        chart = {
+            width: 440,
+            height: 300,
+        };
+        chart.rightEdge = margin.left + chart.width;
+        chart.bottomEdge = margin.top + chart.height;
+        chart.totalHeight = chart.bottomEdge + margin.bottom;
+        chart.totalWidth = chart.rightEdge + margin.right;              
 
-        let svg = d3.select(".vis-holder").append("svg")
-                .attr("class", "crash-chart"),
-            margin = {
-                top: 100,
-                right: 20,
-                bottom: 100,
-                left: 50
-            },
-            width = 440,
-            height = 300,
-            totalWidth = width + margin.left + margin.right,
-            totalHeight = height + margin.top + margin.bottom,
-            g = svg.append("g")
-                .attr("transform", `translate(${margin.left},${margin.top})`);
+        let svg = d3.select(".crash-chart")
+                .attr("class", "crash-chart")
+                .attr("width", chart.totalWidth)
+                .attr("height", chart.totalHeight)
+            .append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`)
             let max = 24;
 
-        svg.attr("width", totalWidth)
-            .attr("height", totalHeight);
+        let xScale = d3.scaleLinear()
+            .domain([0, data.length])
+            .range([0, chart.width]);
 
-        let x = d3.scaleLinear()
-            .domain([0, formattedData.length])
-            .range([0, width]);
-
-        let y = d3.scaleLinear()
+        // yScale is not inverted on the yScale
+        let yScale = d3.scaleLinear()
             .domain([0, max])
-            .rangeRound([height, 0]);
+            .range([chart.bottomEdge, margin.top]);
 
         // heightscale where the y is inverted
         let heightScale = d3.scaleLinear()
             .domain([0, max])
-            .range([0, height]);
-
-        // add x axis
-        let xAxis = g.append("g")
-            .attr("transform", `translate(0,${height})`)
-            .call(d3.axisBottom(x));
+            .range([0, chart.height]);
+        
+        //x axis with labels
+        let xAxis = d3.axisBottom()
+            .scale(xScale)
+            .tickFormat((d, i) => streets[i]);
 
         // add y axis
-        g.append("g")
-            .call(d3.axisLeft(y))
-            .append("text")
-            .attr("fill", "#000")
-            .attr("transform", "rotate(-90)")
-            .attr("y", 6)
-            .attr("dy", "0.71em")
-            .attr("text-anchor", "end")
-            .text("Number of Accidents");
+        svg.append("g")
+            .call(d3.axisLeft(yScale));
+        
+        // add x axis
+        svg.append("g")
+            .attr("class", "xAxis")
+            .call(xAxis)
+            .attr("transform",`translate(0, ${chart.bottomEdge})`);
 
         // Add a title
         svg.append("text")
-            .attr("x", width/2)
+            .attr("x", chart.width/2)
             .attr("y", -margin.top/2)
             .attr("text-anchor", "middle")
             .style("font-size", "24px")
             .text("Bike Accidents on Boston Streets");
 
-        let groups = g.selectAll(".bar")
-            .data(formattedData)
+        // text label for the y axis
+        svg.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", -margin.left)
+            .attr("x",-chart.height/2)
+            .attr("dy", "1em")
+            .style("text-anchor", "middle")
+            .text("Number of Accidents");
+
+        let groups = svg.selectAll(".bar")
+            .data(accidentData)
             .enter().append("g")
                 .attr("class", "bar");
 
@@ -613,8 +625,8 @@ $(function() {
             .data(d => d)
             .enter().append("rect")
                 .attr("class", d => d.type)
-                .attr("x", d => x(d.x) + 3)
-                .attr("y", d => y(d.y) - heightScale(d.crashes))
+                .attr("x", d => xScale(d.x) + 3)
+                .attr("y", d => yScale(d.y) - heightScale(d.crashes))
                 .attr("height", d => heightScale(d.crashes))
                 .attr("width", 33)
                 .style("fill", (d, i) => colorScale[i])
@@ -637,13 +649,14 @@ $(function() {
                     tooltip.style("visibility", "hidden");
                 });
 
-        //rotate text
-        xAxis.selectAll("text")
-            .style("text-anchor", "end")
-            .style("font-size", "12px")
-            .attr("dx", "-.08em")
-            .attr("dy", "2.5em")
-            .attr("transform", "rotate(-65)");
+        //rotate x axis text
+        svg.select("g.xAxis")
+            .selectAll("text")
+                .style("text-anchor", "end")
+                .style("font-size", "9.5px")
+                .attr("dx", "-.0em")
+                .attr("dy", "2.5em")
+                .attr("transform", "rotate(-65)");
     }
 
     // when a bar is hovered over, update view of line chart
