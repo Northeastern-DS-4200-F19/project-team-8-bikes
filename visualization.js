@@ -13,7 +13,7 @@ const laneTypeNames = {
     SBLBL: "Shared Bike Lane/Bike Lane",
 };
 
-let legendHoverText = {
+const legendHoverText = {
     "Bike Lane": "An exclusive lane for bicycle travel.",
     "Buffered Bike Lane": "An exclusive lane for bicycle travel with a striped buffer " +
         "zone adjacent to a vehicle travel lane or parking lane.",
@@ -148,7 +148,7 @@ $(function() {
     let filterStreet;
     let bikeLaneData, trafficData, accidentData;
     // colors for bike lane types
-    const colorScale = ["#fcd88a", "#cf7c1c", "#93c464", "#75734F", "#5eafc6", "#41a368", "#708dd4", "#73bfbf"];
+    const colorScale = ["#fcd88a", "#daa850", "#93c464", "#949173", "#7ab4c6", "#41a368", "#708dd4", "#cf8972"];
 
     d3.csv("data/Street Segment Bike Lanes.csv").then(renderBarChart);
     d3.csv("data/BikeMVCounts.csv").then(renderLineChart);
@@ -521,8 +521,7 @@ $(function() {
     }
 
     function renderCrashBarChart(data) {
-        let formattedData = formatCrashData(data);
-        accidentData = formattedData;
+        accidentData = formatCrashData(data);
         let streets = data.map(d => d["Location"]);
         let margin = {
             top: 40,
@@ -544,7 +543,7 @@ $(function() {
                 .attr("width", chart.totalWidth)
                 .attr("height", chart.totalHeight)
             .append("g")
-                .attr("transform", `translate(${margin.left},${margin.top})`)
+                .attr("transform", `translate(${margin.left},${margin.top})`);
             let max = 24;
 
         let xScale = d3.scaleLinear()
