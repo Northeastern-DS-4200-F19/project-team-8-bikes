@@ -164,7 +164,7 @@ $(function() {
         let margin = {
                 top: 20,
                 right: 60,
-                bottom: 180,
+                bottom: 100,
                 left: 40
             },
             chart = {
@@ -225,7 +225,7 @@ $(function() {
                 .style("font-size", "12px")
                 .attr("dx", "-.0em")
                 .attr("dy", "2.5em")
-                .attr("transform", "rotate(-65)");
+                .attr("transform", "rotate(-60)");
 
         let tooltip = d3.select('body')
             .append("div")
@@ -291,9 +291,9 @@ $(function() {
         // Add a title
         svg.append("text")
             .attr("x", chart.totalWidth/2)
-            .attr("y", -margin.top/2)
+            .attr("y", -margin.top/2 + 5)
             .attr("text-anchor", "middle")
-            .style("font-size", "24px")
+            .style("font-size", "20px")
             .text("Bike Lanes on Boston Streets");
 
         function addLegend() {
@@ -519,14 +519,14 @@ $(function() {
         accidentData = formattedData;
         let streets = data.map(d => d["Location"]);
         let margin = {
-            top: 30,
+            top: 20,
             right: 60,
             bottom: 180,
             left: 63
         },
         chart = {
             width: 440,
-            height: 300,
+            height: 200,
         };
         chart.rightEdge = margin.left + chart.width;
         chart.bottomEdge = margin.top + chart.height;
@@ -573,9 +573,9 @@ $(function() {
         // Add a title
         svg.append("text")
             .attr("x", chart.width/2 + 10)
-            .attr("y", -margin.top/2)
+            .attr("y", -margin.top/2 + 10)
             .attr("text-anchor", "middle")
-            .style("font-size", "20px")
+            .style("font-size", "16px")
             .text("Bike Accidents on Boston Streets");
 
         // text label for the y axis
@@ -647,7 +647,7 @@ $(function() {
                 .style("font-size", "9.5px")
                 .attr("dx", "-.0em")
                 .attr("dy", "2.5em")
-                .attr("transform", "rotate(-65)");
+                .attr("transform", "rotate(-60)");
     }
 
     // when a bar is hovered over, update view of line chart
