@@ -624,7 +624,7 @@ $(function() {
                 .attr("width", 33)
                 .style("fill", (d, i) => colorScale[i])
                 .on("mouseover", (d) => {
-                    d3.selectAll(`rect.bars.street-${formatStreetNameAsClass(d.location)}`).attr("stroke-width", "10px");
+                    d3.selectAll(`rect.bars.street-${formatStreetNameAsClass(d.location)}`).attr("stroke-width", "5px");
                     filterStreet = d.location;
                     updateLineChart();
                     tooltip.html(crashHoverText(d, laneTypeNames));
