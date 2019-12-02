@@ -3,6 +3,11 @@ body {
 	padding: 0 10px;
 	font: 18px/1.5 -apple-system, BlinkMacSystemFont, "avenir next",avenir, "Segoe UI", "lucida grande", "helvetica neue", helvetica, "Fira Sans",roboto, noto, "Droid Sans", cantarell, oxygen, ubuntu, "franklin gothic medium", "century gothic", "Liberation Sans",
 	sans-serif;
+	list-style-type: decimal;
+}
+
+ol > li > ol {
+	list-style-type: lower-latin;
 }
 
 h1, h2, h3 {
@@ -22,7 +27,7 @@ h1, h2, h3 {
 }
 
 /* Fork on GitHub ribbon via https://codepo8.github.io/css-fork-on-github-ribbon/# */  
-#forkongithub a{
+#forkongithub a {
 	background:#00F;
 	color:#fff;
 	text-decoration:none;
