@@ -279,12 +279,6 @@ $(function() {
                     tooltip.style("visibility", "hidden");
                 });
 
-        // text label for the x axis
-        svg.append("text")
-        .attr("transform",`translate(${chart.width/2},${chart.bottomEdge+125})`)
-        .style("text-anchor", "middle")
-        .text("Streets");
-
         // text label for the y axis
         svg.append("text")
             .attr("transform", "rotate(-90)")
@@ -525,10 +519,10 @@ $(function() {
         accidentData = formattedData;
         let streets = data.map(d => d["Location"]);
         let margin = {
-            top: 40,
+            top: 30,
             right: 60,
             bottom: 180,
-            left: 65
+            left: 63
         },
         chart = {
             width: 440,
@@ -578,10 +572,10 @@ $(function() {
 
         // Add a title
         svg.append("text")
-            .attr("x", chart.width/2)
+            .attr("x", chart.width/2 + 10)
             .attr("y", -margin.top/2)
             .attr("text-anchor", "middle")
-            .style("font-size", "24px")
+            .style("font-size", "20px")
             .text("Bike Accidents on Boston Streets");
 
         // text label for the y axis
@@ -591,6 +585,7 @@ $(function() {
             .attr("x",-chart.height/2)
             .attr("dy", "1em")
             .style("text-anchor", "middle")
+            .style("font-size", "15px")
             .text("Number of Accidents");
 
         let groups = svg.selectAll(".bar")
