@@ -131,16 +131,16 @@ function maxTraffic(trafficTimes) {
 
 // hover text for bar graph
 function hoverText(data, bikeLaneTypeNames) {
-    return `  Bike Lane Type: ${bikeLaneTypeNames[data.type]}<br/>
-        Percent: ${data.percent}%<br/> 
-        Neighborhood: ${data.neighborhood}  `;
+    return `<b> Bike Lane Type: </b> ${bikeLaneTypeNames[data.type]}<br/>
+        <b> Percent: </b> ${data.percent}%<br/> 
+        <b> Neighborhood: </b> ${data.neighborhood}`;
 }
 
 // hover text for crash graph
 function crashHoverText(data, bikeLaneTypeNames) {
-    return `  Bike Lane Type: ${bikeLaneTypeNames[data.type]}<br/> 
-        Accidents: ${data.crashes}<br/> 
-        Neighborhood: ${data.neighborhood}  `;
+    return `<b> Bike Lane Type: </b> ${bikeLaneTypeNames[data.type]}<br/> 
+        <b> Accidents: </b>${data.crashes}<br/> 
+        <b> Neighborhood: </b> ${data.neighborhood}`;
 }
 
 /* document loaded */
@@ -233,6 +233,10 @@ $(function() {
                 .style("position", 'absolute')
                 .style("z-index", "10")
                 .style("visibility", "hidden")
+                .style("padding-top","10px")
+                .style("padding-bottom","10px")
+                .style("padding-left","10px")
+                .style("padding-right","10px")
                 .style("background", d3.rgb(176, 196, 222, 1));
 
         // Create groups for each series, rects for each segment
@@ -350,8 +354,11 @@ $(function() {
             d.style("position", "absolute")
                 .attr("class", "tooltip")
                 .style("z-index", "10")
-                .style("width", "400px")
-                .style("height","110px")
+                .style("width", "390px")
+                .style("padding-top","10px")
+                .style("padding-bottom","10px")
+                .style("padding-left","10px")
+                .style("padding-right","10px")
                 .style("visibility", "hidden")
                 .style('background', colorScale[i])
                 .text(`${Object.keys(legendHoverText)[i]}: ${legendHoverText[Object.keys(legendHoverText)[i]]}`)
@@ -589,6 +596,10 @@ $(function() {
                 .style("position", 'absolute')
                 .style("z-index", "10")
                 .style("visibility", "hidden")
+                .style("padding-top","10px")
+                .style("padding-bottom","10px")
+                .style("padding-left","10px")
+                .style("padding-right","10px")
                 .style("background", d3.rgb(176, 196, 222, 1));
 
         // add full height bars
