@@ -18,6 +18,11 @@ div.tooltip {
 	padding: 5px;
 }
 
+.selected {
+	fill: red !important;
+	height: 0 !important;
+}
+
 /* Your text should be in a nice narrow column */
 .content-column {
 	max-width: 650px;

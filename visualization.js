@@ -252,7 +252,7 @@ $(function() {
             .attr("width", 40)
             .attr("stroke", "#000")
             .attr("stroke-width", "0px")
-            .attr("fill", d3.rgb(0, 0, 0, 0));
+            .attr("fill", "none");
 
         // add bar sections
         groups.selectAll("rect.bar")
@@ -264,18 +264,25 @@ $(function() {
                 .attr("height", d => heightScale(d.percent))
                 .attr("width", 40)
                 .style("fill", (d, i) => colorScale[i])
-                .on("mouseover", (d) => {
-                    d3.selectAll(`rect.bars.street-${formatStreetNameAsClass(d.location)}`).attr("stroke-width", "5px");
+                .on("mouseover", (d, i, nodes) => {
+                    d3.selectAll(`rect.bars.street-${formatStreetNameAsClass(d.location)}`)
+                        .attr("stroke-width", "5px");
+                    let classesSelector = "." + d3.select(nodes[i]).attr("class").replace(" ", ".");
+                    d3.selectAll(classesSelector).style("fill", "red");
                     filterStreet = d.location;
                     updateLineChart();
                     tooltip.html(hoverText(d, laneTypeNames));
                     tooltip.style("visibility", "visible");
                 })
                 .on("mousemove", () => {
-                    tooltip.style("top", (d3.event.pageY-10) + "px").style("left",(d3.event.pageX + 10) + "px")
+                    tooltip.style("top", `${d3.event.pageY - 10}px`)
+                        .style("left",`${d3.event.pageX + 10}px`)
                 })
-                .on("mouseout", (d) => {
-                    d3.selectAll(`rect.bars.street-${formatStreetNameAsClass(d.location)}`).attr("stroke-width", "0px");
+                .on("mouseout", (d, i, nodes) => {
+                    d3.selectAll(`rect.bars.street-${formatStreetNameAsClass(d.location)}`)
+                        .attr("stroke-width", "0px");
+                    let classesSelector = "." + d3.select(nodes[i]).attr("class").replace(" ", ".");
+                    d3.selectAll(classesSelector).style("fill", () => colorScale[i]);
                     filterStreet = null;
                     updateLineChart();
                     tooltip.style("visibility", "hidden");
@@ -598,27 +605,32 @@ $(function() {
                 .attr("stroke-width", "0px")
                 .attr("fill", d3.rgb(0, 0, 0, 0));
 
+        // add sub-bars
         groups.selectAll("rect.bar")
             .data(d => d)
             .enter().append("rect")
-                .attr("class", d => d.type)
+                .attr("class", d => `lane-${d.type} street-${formatStreetNameAsClass(d.location)}`)
                 .attr("x", d => xScale(d.x) + 3)
                 .attr("y", d => yScale(d.y) - heightScale(d.crashes))
                 .attr("height", d => heightScale(d.crashes))
                 .attr("width", 33)
                 .style("fill", (d, i) => colorScale[i])
-                .on("mouseover", (d) => {
+                .on("mouseover", (d, i, nodes) => {
                     d3.selectAll(`rect.bars.street-${formatStreetNameAsClass(d.location)}`).attr("stroke-width", "5px");
+                    let classesSelector = "." + d3.select(nodes[i]).attr("class").replace(" ", ".");
+                    d3.selectAll(classesSelector).style("fill", "red");
                     filterStreet = d.location;
                     updateLineChart();
                     tooltip.html(crashHoverText(d, laneTypeNames));
                     tooltip.style("visibility", "visible");
                 })
                 .on("mousemove", () => {
-                    tooltip.style("top", `${d3.event.pageY - 10}px`).style("left", `${d3.event.pageX + 10}px`)
+                    tooltip.style("top", `${d3.event.pageY-10}px`).style("left", `${d3.event.pageX+10}px`)
                 })
-                .on("mouseout", (d) => {
+                .on("mouseout", (d, i, nodes) => {
                     d3.selectAll(`.bars.street-${formatStreetNameAsClass(d.location)}`).attr("stroke-width", "0px");
+                    let classesSelector = "." + d3.select(nodes[i]).attr("class").replace(" ", ".");
+                    d3.selectAll(classesSelector).style("fill", () => colorScale[i]);
                     filterStreet = null;
                     updateLineChart();
                     tooltip.style("visibility", "hidden");
