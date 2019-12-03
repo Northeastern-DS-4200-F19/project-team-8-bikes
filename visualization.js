@@ -239,13 +239,13 @@ $(function() {
         let groups = svg.selectAll("g.bars")
             .data(lanes)
             .enter().append("g")
-                .classed("bars", true)
-                .classed(d => `street-${formatStreetNameAsClass(d[0].location)}`, true);
+                .attr("class", d => `street-${formatStreetNameAsClass(d[0].location)}`)
+                .classed("bars", true);
 
         // add full height bars
         groups.append("rect")
+            .attr( "class", d => `street-${formatStreetNameAsClass(d[0].location)}`)
             .classed("bars", true)
-            .classed( d => `street-${formatStreetNameAsClass(d[0].location)}`, true)
             .attr("x", d => xScale(d[0].x) + 8)
             .attr("y", margin.top)
             .attr("height", chart.height)
@@ -258,15 +258,14 @@ $(function() {
         groups.selectAll("rect.bar")
             .data(d => d)
             .enter().append("rect")
-                .classed(d =>  `lane-${d.type}`, true)
-                .classed(d => `street-${formatStreetNameAsClass(d.location)}`, true)
+                .attr("class", d => `lane-${d.type} street-${formatStreetNameAsClass(d.location)}`)
                 .attr("x", d => xScale(d.x) + 8)
                 .attr("y", d => yScale(d.y) - heightScale(d.percent))
                 .attr("height", d => heightScale(d.percent))
                 .attr("width", 40)
                 .style("fill", (d, i) => colorScale[i])
                 .on("mouseover", (d) => {
-                    d3.selectAll(`rect.bars.street-${formatStreetNameAsClass(d.location)}`).attr("stroke-width", "10px");
+                    d3.selectAll(`rect.bars.street-${formatStreetNameAsClass(d.location)}`).attr("stroke-width", "5px");
                     filterStreet = d.location;
                     updateLineChart();
                     tooltip.html(hoverText(d, laneTypeNames));
@@ -589,8 +588,8 @@ $(function() {
         groups.selectAll("rect.bar")
             .data(d => d)
             .enter().append("rect")
+                .attr("class", d  => `street-${formatStreetNameAsClass(d.location)}`)
                 .classed("bars", true)
-                .classed(d => `street-${formatStreetNameAsClass(d.location)}`, true)
                 .attr("x", d => xScale(d.x) + 3)
                 .attr("y", d => yScale(d.streetTotal))
                 .attr("height", d => heightScale(d.streetTotal))
@@ -602,7 +601,7 @@ $(function() {
         groups.selectAll("rect.bar")
             .data(d => d)
             .enter().append("rect")
-                .classed(d => d.type, true)
+                .attr("class", d => d.type)
                 .attr("x", d => xScale(d.x) + 3)
                 .attr("y", d => yScale(d.y) - heightScale(d.crashes))
                 .attr("height", d => heightScale(d.crashes))
@@ -616,7 +615,7 @@ $(function() {
                     tooltip.style("visibility", "visible");
                 })
                 .on("mousemove", () => {
-                    tooltip.style("top", (d3.event.pageY-10) + "px").style("left",(d3.event.pageX + 10) + "px")
+                    tooltip.style("top", `${d3.event.pageY - 10}px`).style("left", `${d3.event.pageX + 10}px`)
                 })
                 .on("mouseout", (d) => {
                     d3.selectAll(`.bars.street-${formatStreetNameAsClass(d.location)}`).attr("stroke-width", "0px");
