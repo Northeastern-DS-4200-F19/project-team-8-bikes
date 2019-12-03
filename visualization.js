@@ -136,7 +136,7 @@ function hoverText(data, bikeLaneTypeNames) {
         Neighborhood: ${data.neighborhood}`;
 }
 
-// hover text for accident graph
+// hover text for crash graph
 function crashHoverText(data, bikeLaneTypeNames) {
     return `Bike Lane Type: ${bikeLaneTypeNames[data.type]}<br/> 
         Accidents: ${data.crashes}<br/> 
@@ -146,8 +146,8 @@ function crashHoverText(data, bikeLaneTypeNames) {
 /* document loaded */
 $(function() {
     let filterStreet;
-    let bikeLaneData, trafficData, accidentData;
-    // colors for bike lane types
+    let bikeLaneData, trafficData, crashData;
+    // colors for bike lane
     const colorScale = ["#fcd88a", "#daa850", "#93c464", "#949173", "#7ab4c6", "#41a368", "#708dd4", "#cf8972"];
 
     d3.csv("data/Street Segment Bike Lanes.csv").then(renderBarChart);
@@ -209,12 +209,12 @@ $(function() {
 
         //add x and y axes to the svg
         svg.append("g")
-            .attr("class", "yAxis")
+            .classed( "yAxis", true)
             .call(yAxis)
             .attr("transform",`translate(${margin.left}, 0)`);
 
         svg.append("g")
-            .attr("class", "xAxis")
+            .classed( "xAxis", true)
             .call(xAxis)
             .attr("transform",`translate(0, ${chart.bottomEdge})`);
 
@@ -229,21 +229,23 @@ $(function() {
 
         let tooltip = d3.select('body')
             .append("div")
-            .classed('tooltip',true)
-            .style("position", 'absolute')
-            .style("z-index", "10")
-            .style("visibility", "hidden")
-            .style("background", d3.rgb(176, 196, 222, 1));
+                .classed('tooltip', true)
+                .style("position", 'absolute')
+                .style("z-index", "10")
+                .style("visibility", "hidden")
+                .style("background", d3.rgb(176, 196, 222, 1));
 
         // Create groups for each series, rects for each segment
         let groups = svg.selectAll("g.bars")
             .data(lanes)
             .enter().append("g")
-                .attr("class", d => `bars street-${formatStreetNameAsClass(d[0].location)}`);
+                .classed("bars", true)
+                .classed(d => `street-${formatStreetNameAsClass(d[0].location)}`, true);
 
         // add full height bars
         groups.append("rect")
-            .attr("class", d => `bars street-${formatStreetNameAsClass(d[0].location)}`)
+            .classed("bars", true)
+            .classed( d => `street-${formatStreetNameAsClass(d[0].location)}`, true)
             .attr("x", d => xScale(d[0].x) + 8)
             .attr("y", margin.top)
             .attr("height", chart.height)
@@ -256,7 +258,8 @@ $(function() {
         groups.selectAll("rect.bar")
             .data(d => d)
             .enter().append("rect")
-                .attr("class", d => `street-${formatStreetNameAsClass(d.location)} lane-${d.type}`)
+                .classed(d =>  `lane-${d.type}`, true)
+                .classed(d => `street-${formatStreetNameAsClass(d.location)}`, true)
                 .attr("x", d => xScale(d.x) + 8)
                 .attr("y", d => yScale(d.y) - heightScale(d.percent))
                 .attr("height", d => heightScale(d.percent))
@@ -308,14 +311,14 @@ $(function() {
             let legend = svgLegend.selectAll('.legend')
                 .data(bikeLaneTypes)
                 .enter().append('g')
-                .attr("class", "legend")
+                .classed( "legend", true)
                 .attr("transform", (d, i) => `translate(0,${i*20})`)
                 //assigned id
                 .attr("id", (d, i) => `legend${i}`);
 
             // add color circles to legend
             legend.append("circle")
-                .attr("class", "legend-node")
+                .classed( "legend-node", true)
                 .attr("cx", 0)
                 .attr("cy", 0)
                 .attr("r", radius)
@@ -323,7 +326,7 @@ $(function() {
 
             // add text to legend
             legend.append("text")
-                .attr("class", "legend-text")
+                .classed( "legend-text", true)
                 .attr("x", radius*2)
                 .attr("y", radius/2)
                 .style("fill", "#272727")
@@ -333,37 +336,13 @@ $(function() {
 
         addLegend();
 
-        /*let hovers = d3.selectAll(".gLegend .legend").each((d, i, list) => {
-            let item = list[i];
-            // d: lane type abbreviation
-            // console.log(legendHoverText[laneTypeNames[d]]);
-            d3.select("body").append("div")
-                .attr("class", "legend-hover-text")
-                .attr("id", `legend-hover-${i}`)
-                .text("HASDYFSDF")
-                .style("position", "absolute")
-                .style("z-index", "10")
-                .style("visibility", "hidden")
-                .style('background', colorScale[i])
-        });
-
-        d3.selectAll(".gLegend .legend")
-            .on("mouseover", (d, i) =>
-                hovers[i].style("visibility", "visible"))
-            .on("mousemove", (d, i) =>
-                hovers[i].style("top", `${d3.event.pageY-10}px`).style("left",`${d3.event.pageX+10}px`))
-            .on("mouseout", (d, i) =>
-                hovers[i].style("visibility", "hidden"))
-            .on("click", function () {
-                console.log("Selecting legend")
-            });*/
-
         let body = d3.select("body");
         let legendTooltips = [body.append("div"), body.append("div"), body.append("div"), body.append("div"),
             body.append("div"), body.append("div"), body.append("div"), body.append("div")];
 
         legendTooltips.forEach((d, i) =>
             d.style("position", "absolute")
+                .attr("class", "tooltip")
                 .style("z-index", "10")
                 .style("width", "400px")
                 .style("height","110px")
@@ -416,14 +395,15 @@ $(function() {
         let group = d3.select(".line-chart")
                 .attr("width", width + margin.left + margin.right)
                 .attr("height", height + margin.top + margin.bottom)
-                .attr("class", "line-chart")
+                .classed( "line-chart", true)
                 .append("g")
                     .attr("transform",`translate(${margin.left},${margin.top})`);
 
         // Add the valueLine path for bikes
         group.append("path")
             .data([averageTraffic(trafficData.bike, times)])
-            .attr("class", "line bike")
+            .classed("line", true)
+            .classed("bike", true)
             .attr("d", valueLine)
             .attr("fill", "none")
             .attr("data-legend", d => d.type)
@@ -432,7 +412,8 @@ $(function() {
         // add average bike line
         group.append("path")
             .data([averageTraffic(trafficData.bike, times)])
-            .attr("class", "line bike-average")
+            .classed("line", true)
+            .classed("bike-average", true)
             .attr("d", valueLine)
             .attr("fill", "none")
             .attr("data-legend", d => d.type)
@@ -440,7 +421,8 @@ $(function() {
 
         //add bike icon
         group.append("image")
-            .attr("class", "icon bike")
+            .classed("icon", true)
+            .classed("bike", true)
             .attr("x", 5)
             .attr("y", y(averageTraffic(trafficData.bike, times)[0].quantity) - 20)
             .attr("width", 20)
@@ -450,7 +432,8 @@ $(function() {
         // Add the valueLine path for motor vehicles
         group.append("path")
             .data([averageTraffic(trafficData.mv, times)])
-            .attr("class", "line mv")
+            .classed("line", true)
+            .classed("mv", true)
             .attr("d", valueLine)
             .attr("fill", "none")
             .attr("data-legend", "Motor Vehicles")
@@ -459,7 +442,8 @@ $(function() {
         // Add average motor vehicle line
         group.append("path")
             .data([averageTraffic(trafficData.mv, times)])
-            .attr("class", "line mv-average")
+            .classed("line", true)
+            .classed("mv-average", true)
             .attr("d", valueLine)
             .attr("fill", "none")
             .attr("data-legend", "Motor Vehicles")
@@ -467,7 +451,8 @@ $(function() {
 
         //add mv icon
         group.append("image")
-            .attr("class", "icon mv")
+            .classed("icon", true)
+            .classed("mv", true)
             .attr("x", 5)
             .attr("y", y(averageTraffic(trafficData.mv, times)[0].quantity) - 20)
             .attr("width", 20)
@@ -477,12 +462,12 @@ $(function() {
         // Add the X Axis
         group.append("g")
             .attr("transform", `translate(0,${height})`)
-            .attr("class", "x-axis")
+            .classed("x-axis", true)
             .call(d3.axisBottom(x).tickFormat(d3.timeFormat("%I %p")));
 
         // Add the Y Axis
         group.append("g")
-            .attr("class", "y-axis")
+            .classed("y-axis", true)
             .call(d3.axisLeft(y));
 
         // text label for the x axis
@@ -505,7 +490,7 @@ $(function() {
         // Add a title
         d3.select(".line-chart")
             .append("g")
-            .attr("class", "title")
+            .classed("title", true)
                 .append("text")
                     .attr("x", ((width + margin.left + margin.right + 30) / 2))
                     .attr("y", (margin.top / 2))
@@ -515,7 +500,7 @@ $(function() {
     }
 
     function renderCrashBarChart(data) {
-        accidentData = formatCrashData(data);
+        crashData = formatCrashData(data);
         let streets = data.map(d => d["Location"]);
         let margin = {
             top: 20,
@@ -533,7 +518,7 @@ $(function() {
         chart.totalWidth = chart.rightEdge + margin.right;
 
         let svg = d3.select(".crash-chart")
-                .attr("class", "crash-chart")
+                .classed("crash-chart", true)
                 .attr("width", chart.totalWidth)
                 .attr("height", chart.totalHeight)
             .append("g")
@@ -565,7 +550,7 @@ $(function() {
 
         // add x axis
         svg.append("g")
-            .attr("class", "xAxis")
+            .classed("xAxis", true)
             .call(xAxis)
             .attr("transform",`translate(0, ${chart.bottomEdge})`);
 
@@ -575,7 +560,7 @@ $(function() {
             .attr("y", -margin.top/2 + 10)
             .attr("text-anchor", "middle")
             .style("font-size", "16px")
-            .text("Bike Accidents on Boston Streets");
+            .text("Bike Crashes on Boston Streets");
 
         // text label for the y axis
         svg.append("text")
@@ -585,26 +570,27 @@ $(function() {
             .attr("dy", "1em")
             .style("text-anchor", "middle")
             .style("font-size", "15px")
-            .text("Number of Accidents");
+            .text("Number of Crashes");
 
         let groups = svg.selectAll(".bar")
-            .data(accidentData)
+            .data(crashData)
             .enter().append("g")
-                .attr("class", "bar");
+                .classed("bar", true);
 
         let tooltip = d3.select('body')
             .append("div")
-            .classed('tooltip',true)
-            .style("position", 'absolute')
-            .style("z-index", "10")
-            .style("visibility", "hidden")
-            .style("background", d3.rgb(176, 196, 222, 1));
+                .classed('tooltip', true)
+                .style("position", 'absolute')
+                .style("z-index", "10")
+                .style("visibility", "hidden")
+                .style("background", d3.rgb(176, 196, 222, 1));
 
         // add full height bars
         groups.selectAll("rect.bar")
             .data(d => d)
             .enter().append("rect")
-                .attr("class", d => `bars street-${formatStreetNameAsClass(d.location)}`)
+                .classed("bars", true)
+                .classed(d => `street-${formatStreetNameAsClass(d.location)}`, true)
                 .attr("x", d => xScale(d.x) + 3)
                 .attr("y", d => yScale(d.streetTotal))
                 .attr("height", d => heightScale(d.streetTotal))
@@ -616,7 +602,7 @@ $(function() {
         groups.selectAll("rect.bar")
             .data(d => d)
             .enter().append("rect")
-                .attr("class", d => d.type)
+                .classed(d => d.type, true)
                 .attr("x", d => xScale(d.x) + 3)
                 .attr("y", d => yScale(d.y) - heightScale(d.crashes))
                 .attr("height", d => heightScale(d.crashes))
