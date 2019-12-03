@@ -131,16 +131,16 @@ function maxTraffic(trafficTimes) {
 
 // hover text for bar graph
 function hoverText(data, bikeLaneTypeNames) {
-    return `Bike Lane Type: ${bikeLaneTypeNames[data.type]}<br/>
+    return `  Bike Lane Type: ${bikeLaneTypeNames[data.type]}<br/>
         Percent: ${data.percent}%<br/> 
-        Neighborhood: ${data.neighborhood}`;
+        Neighborhood: ${data.neighborhood}  `;
 }
 
 // hover text for crash graph
 function crashHoverText(data, bikeLaneTypeNames) {
-    return `Bike Lane Type: ${bikeLaneTypeNames[data.type]}<br/> 
+    return `  Bike Lane Type: ${bikeLaneTypeNames[data.type]}<br/> 
         Accidents: ${data.crashes}<br/> 
-        Neighborhood: ${data.neighborhood}`;
+        Neighborhood: ${data.neighborhood}  `;
 }
 
 /* document loaded */
