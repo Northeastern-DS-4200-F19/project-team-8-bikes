@@ -34,8 +34,8 @@
 <body>
 
 <span id="forkongithub">
-      <a href="https://github.com/Northeastern-DS-4200-F19/project-team-8-bikes">Fork me on GitHub</a>
-    </span>
+    <a href="https://github.com/Northeastern-DS-4200-F19/project-team-8-bikes">Fork me on GitHub</a>
+</span>
 
 <!--writeup-->
 <div class="content-column">
@@ -75,181 +75,177 @@
 
     <p> The intent of the visualizations below is to be used as a reference when the neighborhood requests policy changes or additional infrastructure for bike lanes.
       We hope that our visualization leads to improvement in bike safety in the neighborhood in the future.
- </p>
+    </p>
 
-
-
+    <!-- visualization -->
     <h1>Visualization</h1>
+    <div class="vis-holder">
+        <svg id="vis-svg"
+             preserveAspectRatio="xMidYMid meet" class="marks" viewBox="0 0 821 520" version="1.1"
+             xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        </svg>
+        <svg class='line-chart'></svg>
+        <svg class='crash-chart'></svg>
+    </div>
 
-</div>
-
-<!-- visualization -->
-<div class="vis-holder">
-    <svg id="vis-svg"
-         preserveAspectRatio="xMidYMid meet" class="marks" viewBox="0 0 821 520" version="1.1"
-         xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    </svg>
-    <svg class='line-chart'></svg>
-    <svg class='crash-chart'></svg>
-</div>
-
-<!-- writeup-->
-<div class="content-column">
-    <h1>Demo Video</h1>
-    <video controls width="100%">
-        <source src="files/walkthrough.mp4" type="video/mp4">
+    <!-- writeup-->
+    <div class="content-column">
+        <h1>Demo Video</h1>
+        <video controls width="100%">
+            <source src="files/Final Bike Safety Visualization Video.mp4" type="video/mp4">
         <p>
             Your browser doesn't support HTML5 video.
-            Here is a <a href="files/walkthrough.mp4">link to the video</a> instead.
+            Here is a <a href="files/Final Bike Safety Visualization Video.mp4">link to the video</a> instead.
         </p>
-    </video>
+        </video>
 
-    <h1>Visualization explanation</h1>
-    <p>
-        We decided to use a stacked bar graph, because it was the best method for displaying bike lane type distribution
-        so that comparing different streets is as simple as possible. Using
-    </p>
-    <p>
-        We decided to use line graph with a line for each of motor vehicle and bike traffic was the best way to
-        discover correlations between each other, as well as comparisons between streets. The low-opacity average line
-        that remains visible while the view is filtered can help
-    </p>
-    <p>
-        For our third graph displaying bike crashes on different streets, we chose to use a bar graph for ease of
-        comparison between different streets as well as with the full-height bar graph.
-    </p>
+        <h1>Visualization explanation</h1>
+        <p>
+            We decided to use a stacked bar graph, because it was the best method for displaying bike lane type distribution
+            so that comparing different streets is as simple as possible. Using
+        </p>
+        <p>
+            We decided to use line graph with a line for each of motor vehicle and bike traffic was the best way to
+            discover correlations between each other, as well as comparisons between streets. The low-opacity average line
+            that remains visible while the view is filtered can help
+        </p>
+        <p>
+            For our third graph displaying bike crashes on different streets, we chose to use a bar graph for ease of
+            comparison between different streets as well as with the full-height bar graph.
+        </p>
 
-    <h1>Data Analysis</h1>
-    <p>
-        We used 3 different sources of data to construct this visualization; they are: a geographical map of bike lanes
-        in Boston, a spreadsheet of vehicle counts for bikes and motor vehicles at specific locations around Boston,
-        and a list of bicycle crashes in Boston.
+        <h1>Data Analysis</h1>
+        <p>
+            We used 3 different sources of data to construct this visualization; they are: a geographical map of bike lanes
+            in Boston, a spreadsheet of vehicle counts for bikes and motor vehicles at specific locations around Boston,
+            and a list of bicycle crashes in Boston.
 
-        <dl>
-          <dt><b>Vision Zero Crash Records(csv)</b></dt>
-          <dd>Data contains crash reports for crashes involving cars, bikes, and pedestrians in Boston.
-            We filtered to show only bike incidents and accidents that occured in the past year. This data was used to create the accident bar chart.</dd>
-          </br>
-          <dt><b>2017 Boston Bicycle Counts(csv)</b></dt>
-          <dd>Data contains both bicycle and motor vehicle counts by the hour for 62 locations in Boston 2017. This data was used in the line chart.</dd>
-          </br>
-          <dt><b>EXISTING BIKE NETWORK(geojson)</b></dt>
-          <dd>Existing Bike network within the City of Boston.</dd>
-        </dl>
-    </p>
-    <p>
-        To construct our final dataset, we calculated the portions of each street we examined that was covered
-        with each type of bike lane, and added the bike lane type to the crash data for those streets.
-    </p>
+            <dl>
+              <dt><b>Vision Zero Crash Records(csv)</b></dt>
+              <dd>Data contains crash reports for crashes involving cars, bikes, and pedestrians in Boston.
+                We filtered to show only bike incidents and accidents that occured in the past year. This data was used to create the accident bar chart.</dd>
+              </br>
+              <dt><b>2017 Boston Bicycle Counts(csv)</b></dt>
+              <dd>Data contains both bicycle and motor vehicle counts by the hour for 62 locations in Boston 2017. This data was used in the line chart.</dd>
+              </br>
+              <dt><b>EXISTING BIKE NETWORK(geojson)</b></dt>
+              <dd>Existing Bike network within the City of Boston.</dd>
+            </dl>
+        </p>
+        <p>
+            To construct our final dataset, we calculated the portions of each street we examined that was covered
+            with each type of bike lane, and added the bike lane type to the crash data for those streets.
+        </p>
 
+        <h1>Task Analysis</h1>
+        <ol>
+            <li>
+                Comparing bike and car traffic patterns for Mass Ave and other streets.
+                <ol>
+                    <li>Gather bike & car traffic data across different neighborhoods in Boston</li>
+                    <li>Analyze car and biking patterns across time</li>
+                </ol>
+            </li>
 
-    <h1>Task Analysis</h1>
-    <ol>
-        <li>
-            Comparing bike and car traffic patterns for Mass Ave and other streets.
-            <ol>
-                <li>Gather bike & car traffic data across different neighborhoods in Boston</li>
-                <li>Analyze car and biking patterns across time</li>
-            </ol>
-        </li>
+            <li>
+                Identify the different types of bike lanes in streets of Boston
+                <ol>
+                    <li>Obtain all types of bike lanes in a street</li>
+                    <li>Calculate the portion of how much each bike lanes takes up of the street</li>
+                </ol>
+            </li>
 
-        <li>Identify the different types of bike lanes in streets of Boston
-            <ol>
-                <li>Obtain all types of bike lanes in a street</li>
-                <li>Calculate the portion of how much each bike lanes takes up of the street</li>
-            </ol>
-        </li>
+            <li>
+                Examine the bike lanes compared to other neighborhoods.
+                <ol>
+                    <li>Aggregate bike lanes across neighborhoods</li>
+                    <li>Identify bike accident trends across neighborhoods</li>
+                </ol>
+            </li>
+        </ol>
 
-        <li>Examine the bike lanes compared to other neighborhoods.
-            <ol>
-                <li>Aggregate bike lanes across neighborhoods</li>
-                <li>Identify bike accident trends across neighborhoods</li>
-            </ol>
-        </li>
-    </ol>
+        <h1>Design Process</h1>
+        <p>By the end, we had made significant changes to our original design. We quickly moved away from the idea of
+            representing
+            the information using a map, since we wanted to paint a better picture of bike safety for the greater Boston
+            area. As a
+            group, we decided that the map was not crucial in describing bike safety in Boston, since the geographical
+            location
+            wasn’t nearly as important as the bike lane type, number of crashes, and traffic levels. We then made some
+            smaller
+            design choices and tweaks. For instance, we decided not to allow the user to filter traffic by bike lane type,
+            since we
+            only had that information for a very limited number of streets. This was similar to many of our decisions, as it
+            was
+            based on what we had available to us. Our data definitely limited our options in terms of the details of our
+            visualization, since we could only present what we could find. Lastly, we also decided to include data for a
+            greater
+            number and portion of streets, instead of sticking to the Chester Square area, since we knew people biking in
+            that
+            area would likely be biking in the surrounding area as well. We also thought it was important to compare
+            different
+            streets around Boston, thinking comparison in safety levels could be significant regardless of the distance from
+            Chester Square.
+        </p>
+        <img src="images/initial_vis_sketch.JPG" alt="Initial Visualization Sketch" height="280" width="410">
+        <img src="images/final_vis_sketch.jpg" alt="Final Visualization Sketch" height="330" width="490">
+        <h1>Conclusion</h1>
+        <p>
+            Our visualization allows the user to compare car and bike traffic to accidents and bike lane types for the Boston
+            area.
+            This discussion is imperative in regards to the improvement of bike safety in Chester Square and greater Boston
+            area.
+            From the data available to us, we faced high level of difficulty in drawing correlations between bike lane types
+            and
+            the number of accidents on certain streets. The majority of the number of accidents for certain bike lane type
+            on a
+            certain street made sense in terms of the proportion of the bike lane type on that street. However, we were able
+            to
+            find streets where the number of accidents was disproportionate to the level of traffic. For example,
+            Massachusetts
+            Ave had significantly more accidents than any other street, which on first look, makes sense as its traffic
+            level is
+            much higher than the average. After comparing to the other streets, however, it is apparent that Beacon Street
+            has a
+            similar traffic level with less than half the number of accidents. From our data alone, it is difficult to
+            conclude
+            that Mass Ave has a bike safety problem, but it demonstrates a potential problem and calls for further
+            investigation.
+            In the future, it would be helpful to have more precise data sets, especially for car and bike traffic, since
+            that
+            would assist greatly in the search for a correlation. Better data would allow for definitive conclusions to be
+            drawn
+            about bike safety on the different streets, rather than just displaying a more general picture and highlighting
+            some
+            potential danger areas. Lastly, it would also be helpful to do a more in-depth study of the different bike lane
+            types to determine why certain types may be better than others. For people attempting to install safer bike
+            lanes,
+            it would be helpful to know what bikers like better and why certain lanes will keep them safer.
+        </p>
 
-    <h1>Design Process</h1>
-    <p>By the end, we had made significant changes to our original design. We quickly moved away from the idea of
-        representing
-        the information using a map, since we wanted to paint a better picture of bike safety for the greater Boston
-        area. As a
-        group, we decided that the map was not crucial in describing bike safety in Boston, since the geographical
-        location
-        wasn’t nearly as important as the bike lane type, number of crashes, and traffic levels. We then made some
-        smaller
-        design choices and tweaks. For instance, we decided not to allow the user to filter traffic by bike lane type,
-        since we
-        only had that information for a very limited number of streets. This was similar to many of our decisions, as it
-        was
-        based on what we had available to us. Our data definitely limited our options in terms of the details of our
-        visualization, since we could only present what we could find. Lastly, we also decided to include data for a
-        greater
-        number and portion of streets, instead of sticking to the Chester Square area, since we knew people biking in
-        that
-        area would likely be biking in the surrounding area as well. We also thought it was important to compare
-        different
-        streets around Boston, thinking comparison in safety levels could be significant regardless of the distance from
-        Chester Square.
-    </p>
-    <img src="images/initial_vis_sketch.JPG" alt="Initial Visualization Sketch" height="280" width="410">
-    <img src="images/final_vis_sketch.jpg" alt="Final Visualization Sketch" height="330" width="490">
-    <h1>Conclusion</h1>
-    <p>
-        Our visualization allows the user to compare car and bike traffic to accidents and bike lane types for the Boston
-        area.
-        This discussion is imperative in regards to the improvement of bike safety in Chester Square and greater Boston
-        area.
-        From the data available to us, we faced high level of difficulty in drawing correlations between bike lane types
-        and
-        the number of accidents on certain streets. The majority of the number of accidents for certain bike lane type
-        on a
-        certain street made sense in terms of the proportion of the bike lane type on that street. However, we were able
-        to
-        find streets where the number of accidents was disproportionate to the level of traffic. For example,
-        Massachusetts
-        Ave had significantly more accidents than any other street, which on first look, makes sense as its traffic
-        level is
-        much higher than the average. After comparing to the other streets, however, it is apparent that Beacon Street
-        has a
-        similar traffic level with less than half the number of accidents. From our data alone, it is difficult to
-        conclude
-        that Mass Ave has a bike safety problem, but it demonstrates a potential problem and calls for further
-        investigation.
-        In the future, it would be helpful to have more precise data sets, especially for car and bike traffic, since
-        that
-        would assist greatly in the search for a correlation. Better data would allow for definitive conclusions to be
-        drawn
-        about bike safety on the different streets, rather than just displaying a more general picture and highlighting
-        some
-        potential danger areas. Lastly, it would also be helpful to do a more in-depth study of the different bike lane
-        types to determine why certain types may be better than others. For people attempting to install safer bike
-        lanes,
-        it would be helpful to know what bikers like better and why certain lanes will keep them safer.
-    </p>
+        <h1>Acknowledgements</h1>
+        <ul>
+            <li><a href="https://d3js.org/">D3: Data-Driven Documents</a> by Mike Bostock.</li>
+            <li><a href="https://codepo8.github.io/css-fork-on-github-ribbon/#">Pure CSS responsive "Fork me on GitHub"
+                ribbon</a> by Chris Heilmann
+            </li>
+            <li>
+                <a href="https://bl.ocks.org/KingOfCramers/04dcd9742a2be13d99db5f7a7480b4ca">
+                    Simple Stacked Bar Chart</a> by Harry Cramer
+            </li>
+            <li>
+                <a href="http://bl.ocks.org/mstanaland/6100713">Stacked bar chart with tooltips</a> by Michael Stanaland
+            </li>
+            <li>
+                <a href="https://bl.ocks.org/d3noob/402dd382a51a4f6eea487f9a35566de0">Simple line graph with v4</a> by
+                d3noob
+            </li>
+            <li>
+                <a href="https://bl.ocks.org/dianaow/0da76b59a7dffe24abcfa55d5b9e163e">D3 V4 Multiple-line chart:
+                    Hover tooltip</a> by Diana Ow
+            </li>
+        </ul>
 
-    <h1>Acknowledgements</h1>
-    <ul>
-        <li><a href="https://d3js.org/">D3: Data-Driven Documents</a> by Mike Bostock.</li>
-        <li><a href="https://codepo8.github.io/css-fork-on-github-ribbon/#">Pure CSS responsive "Fork me on GitHub"
-            ribbon</a> by Chris Heilmann
-        </li>
-        <li>
-            <a href="https://bl.ocks.org/KingOfCramers/04dcd9742a2be13d99db5f7a7480b4ca">
-                Simple Stacked Bar Chart</a> by Harry Cramer
-        </li>
-        <li>
-            <a href="http://bl.ocks.org/mstanaland/6100713">Stacked bar chart with tooltips</a> by Michael Stanaland
-        </li>
-        <li>
-            <a href="https://bl.ocks.org/d3noob/402dd382a51a4f6eea487f9a35566de0">Simple line graph with v4</a> by
-            d3noob
-        </li>
-        <li>
-            <a href="https://bl.ocks.org/dianaow/0da76b59a7dffe24abcfa55d5b9e163e">D3 V4 Multiple-line chart:
-                Hover tooltip</a> by Diana Ow
-        </li>
-    </ul>
-
-</div>
+    </div>
 </body>
 </html>
